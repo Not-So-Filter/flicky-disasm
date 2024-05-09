@@ -266,7 +266,7 @@ loc_320:
 		swap    d1		       ; Swap register halves (dbf loops can only be a word in size, so this is an artificial dbf longword implementation).
 		moveq	#0,d0		    ; Clear d0.
 loc_33c:
-		add.w   (a0)+,d0		 ; Start adding the opcode's bytes together, into d0.
+		add.w	(a0)+,d0		 ; Start adding the opcode's bytes together, into d0.
 		dbf	d2,loc_33c               ; Repeat for the ROM's end address (lower word).
 		dbf	d1,loc_33c               ; Repeat for the ROM's end address (higher word).
 		cmp.w	Checksum.w,d0		; Does it match the checksum's header value?
@@ -764,7 +764,7 @@ loc_B10:
 		bsr.w	loc_c16
 		cmpi.w	#$FC,d1
 		bcc.s   loc_b4c
-		add.w   d1,d1
+		add.w	d1,d1
 		move.b	(a1,d1.w),d0
 		ext.w   d0
 		bsr.w	loc_c2a
@@ -869,14 +869,14 @@ loc_B96:
 		sub.w	d0,d1
 		bne.s   loc_bc4
 		move.b	(a0)+,d0
-		add.w   d0,d0
+		add.w	d0,d0
 		move.w	d7,(a1,d0.w)
 		bra.s	loc_b96
 
 loc_bc4:
 		move.b	(a0)+,d0
 		lsl.w   d1,d0
-		add.w   d0,d0
+		add.w	d0,d0
 		moveq	#1,d5
 		lsl.w   d1,d5
 		subq.w	#1,d5
@@ -890,10 +890,10 @@ loc_BD0:
 
 loc_bdc:
 		lsl.w   d0,d5
-		add.w   d0,d6
-		add.w   d0,d0
+		add.w	d0,d6
+		add.w	d0,d0
 		and.w   loc_c38(pc,d0.w),d1
-		add.w   d1,d5
+		add.w	d1,d5
 		move.w	d6,d0
 		subq.w	#8,d0
 		bcs.s   loc_bfe
@@ -937,7 +937,7 @@ loc_c16:
 		sub.w	d0,d7
 		move.w	d5,d1
 		lsr.w	d7,d1
-		add.w   d0,d0
+		add.w	d0,d0
 		and.w   loc_c38(pc,d0.w),d1
 		rts		              ; Return.
 
@@ -992,14 +992,14 @@ loc_c78:
 		lsl.w   d7,d1
 		move.b	(a0),d5
 		rol.b   d7,d5
-		add.w   d7,d7
+		add.w	d7,d7
 		and.w   loc_c38(pc,d7.w),d5
-		add.w   d5,d1
+		add.w	d5,d1
 loc_C96:
 		move.w	a5,d0
-		add.w   d0,d0
+		add.w	d0,d0
 		and.w   loc_c38(pc,d0.w),d1
-		add.w   d3,d1
+		add.w	d3,d1
 		move.b	(a0)+,d5
 		lsl.w   #8,d5
 		move.b	(a0)+,d5
@@ -1011,9 +1011,9 @@ loc_ca8:
 		beq.s	loc_cbc
 		lsr.w	d7,d1
 		move.w	a5,d0
-		add.w   d0,d0
+		add.w	d0,d0
 		and.w   loc_c38(pc,d0.w),d1
-		add.w   d3,d1
+		add.w	d3,d1
 		move.w	a5,d0
 		bra.w	loc_c2a
 loc_CBC:
@@ -1104,7 +1104,7 @@ loc_D3c:
 		bsr.w	loc_c2a
 		andi.w	#$F,d2
 		lsr.w	#4,d1
-		add.w   d1,d1
+		add.w	d1,d1
 		jmp	loc_D98(pc,d1.w)
 
 ; ======================================================================
@@ -1334,7 +1334,7 @@ loc_EDA:
 loc_EDE:
 		move.w	(a1)+,(a3)               ; Write the first mapping to the VDP.
 		dbf	d4,loc_Ede               ; Repeat for the tiles across that line.
-		add.l   d7,d0		    ; Increment downwards by 1 tile.
+		add.l	d7,d0		    ; Increment downwards by 1 tile.
 		dbf	d2,loc_Eda               ; Repeat for the next line across.
 		rts		              ; Return.
 
@@ -1351,7 +1351,7 @@ loc_EFE:
 loc_F02:
 		move.w	d4,(a3)		  ; Write the tile onto the screen.
 		dbf	d3,loc_F02               ; Repeat for the tiles across that line.
-		add.l   d5,d0		    ; Increment downwards by 1 tile.
+		add.l	d5,d0		    ; Increment downwards by 1 tile.
 		dbf	d2,loc_Efe               ; Repeat for the next line across.
 		rts		              ; Return.
 
@@ -1404,12 +1404,12 @@ RandomNumber:				    ; $F4A
 loc_F56:
 		move.l	d1,d0		    ; Below instructions randomise the number, no reason to comment, really...
 		asl.l   #2,d1
-		add.l   d0,d1
+		add.l	d0,d1
 		asl.l   #3,d1
-		add.l   d0,d1
+		add.l	d0,d1
 		move.w	d1,d0
 		swap    d1
-		add.w   d1,d0
+		add.w	d1,d0
 		move.w	d0,d1
 		swap    d1
 		move.l	d1,($FFFFFFCA).w         ; Store in the random number address.
@@ -1433,7 +1433,7 @@ loc_F82:
 loc_F86:
 		sub.w	d3,d2
 		neg.w   d2
-		add.w   d0,d2
+		add.w	d0,d2
 		cmp.w   d2,d0
 		bcc.s   loc_F92
 		moveq	#0,d2
@@ -1733,7 +1733,7 @@ loc_119E:
 		andi.w	#$100,d1		 ; Get the hundredth; strip the rest of the bits except for the higher N bit.
 		lsr.w	#3,d1		    ; Divide to get into the byte range.
 		or.w    d1,d0		    ; Add onto the rest of the bits.
-		add.w   d0,d0		    ; Multiply by 2 to account for the word size.
+		add.w	d0,d0		    ; Multiply by 2 to account for the word size.
 		move.w	(a5)+,d2		 ; Reload the palette value.
 		move.w	d2,d1		    ; Copy into d1.
 		andi.w	#$0EEE,d1		; Ensure that white is the highest value attainable.
@@ -1774,7 +1774,7 @@ loc_1218:
 		move.w	d3,d2
 		move.w	d4,d1
 		moveq	#$20,d0
-		add.w   d0,d3
+		add.w	d0,d3
 		bsr.w	loc_A76
 		addi.b	#$11,d4
 		bcc.s   loc_1218
@@ -1801,8 +1801,8 @@ loc_124A:
 		move.w	(a0)+,d3		 ; Move VRAM alignment value into d3.
 		move.w	#$00FF,d4		; Set d4 as -1 (for dbf loop).
 		move.w	d4,d5		    ; Do the same to d5.
-		add.b   (a0)+,d4		 ; X-times to loop, -1.
-		add.b   (a0)+,d5		 ; Y-times to loop, -1.
+		add.b	(a0)+,d4		 ; X-times to loop, -1.
+		add.b	(a0)+,d5		 ; Y-times to loop, -1.
 		rts		              ; Return.
 
 loc_1260:
@@ -1811,10 +1811,10 @@ loc_1260:
 		move.w	d4,d0		    ; Refresh X-times counter
 loc_1268:
 		move.w	(a0)+,d1		 ; Load first map tile.
-		add.w   d3,d1		    ; Add to align with VRAM.
+		add.w	d3,d1		    ; Add to align with VRAM.
 		move.w	d1,-4(a6)		; Write onto the screen.
 		dbf	d0,loc_1268              ; Repeat until first line of tiles has been written.
-		add.w   ($FFFFFFE2).w,d2         ; Add to the address needed to be calculated.
+		add.w	($FFFFFFE2).w,d2         ; Add to the address needed to be calculated.
 		dbf	d5,loc_1260              ; Repeat for the next line.
 		move.w	d3,d0		    ; Move VRAM alignment tile into d0 (for decompressing the art).
 		rts		              ; Return.
@@ -2071,7 +2071,7 @@ loc_10126:
 		jsr	($FFFFFB8A).w            ; Convert to address.
 		lea	loc_2372.w,a0              ; Load start of compressed ASCII symbols.
 		moveq	#$20,d0		  ; Set to use palette entry 2 and 0.
-		add.b   ($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
+		add.b	($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
 		move.w	#(loc_2372_End-loc_2372)/8,d1 ; Get the length of the data, divided by 8.
 		jsr	($FFFFFA8E).w            ; Decompress it.
 		moveq	#$30,d0		  ; Set to write to VRAM address $30.
@@ -2079,7 +2079,7 @@ loc_10126:
 		jsr	($FFFFFB8A).w            ; Convert to address.
 		lea	loc_185fc,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$20,d0		  ; Set to use palette entry 2 and 0.
-		add.b   ($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
+		add.b	($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
 		jsr	($FFFFFA8E).w            ; Decompress it.
 		move.w	#$120,d0		 ; Set to write to VRAM address $120.
@@ -2087,7 +2087,7 @@ loc_10126:
 		jsr	($FFFFFB8A).w            ; Convert to an address.
 		lea	loc_2372.w,a0              ; Load the start of the compressed ASCII symbols.
 		moveq	#$30,d0		  ; Set to use palette line 3 and 0.
-		add.b   ($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
+		add.b	($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
 		move.w	#(loc_2372_End-loc_2372)/8,d1 ; Get the length of the data, divided by 8.
 		jsr	($FFFFFA8E).w            ; Decompress it.
 		move.w	#$130,d0		 ; Set to write to VRAM address $130.
@@ -2095,7 +2095,7 @@ loc_10126:
 		jsr	($FFFFFB8A).w            ; Convert to an address.
 		lea	loc_185fc,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$30,d0		  ; Set to use palette line 3 and 0.
-		add.b   ($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
+		add.b	($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
 		jsr	($FFFFFA8E).w            ; Decompress it.
 		rts		              ; Return.
@@ -2336,7 +2336,7 @@ loc_10e34:
 loc_10e36:
 		subi.w	#$32,d4
 loc_10e3a:
-		add.w   d1,d4
+		add.w	d1,d4
 loc_10e3c:
 		addi.w	#$40,d4
 		tst.w	d5
@@ -2368,7 +2368,7 @@ loc_10e6c:
 		andi.l	#$0000FFFF,d1
 		divu.w	($FFFFE634).w,d1
 		swap    d1
-		add.w   d1,($FFFFE630).w         ; Redundant, as the higher word that was swapped low was cleared by the andi.
+		add.w	d1,($FFFFE630).w         ; Redundant, as the higher word that was swapped low was cleared by the andi.
 		dbf	d7,loc_10e6c
 loc_10e82:
 		movem.l (sp)+,d0-d1/d7           ; Restore register values.
@@ -2442,10 +2442,10 @@ loc_10F14:
 ; ======================================================================
 ; TODO - Comment this.
 loc_10F24:
-		add.w   d7,d7
+		add.w	d7,d7
 		lsl.w   #6,d6
-		add.w   d6,d7
-		add.w   d5,d7
+		add.w	d6,d7
+		add.w	d5,d7
 		move.w	d7,d5
 
 				   ; TODO - CalcVRAMAddress?
@@ -2505,7 +2505,7 @@ loc_10F82:
 loc_10F86:
 		move.w	(a6)+,(a3)               ; Write first tile onto the screen (horizontally).
 		dbf	d1,loc_10F86             ; Repeat for d1 times horizontally.
-		add.l   d0,d5		    ; Increment down a line on screen.
+		add.l	d0,d5		    ; Increment down a line on screen.
 		dbf	d6,loc_10F82             ; Repeat for d6 times vertically.
 		rts		              ; Return.
 
@@ -2517,7 +2517,7 @@ loc_10F94:				    ; TODO
 		bra.s	loc_10FA6
 
 loc_10FA2:
-		add.w   ($FFFFD884).w,d4         ; Set the map tile to use priority.
+		add.w	($FFFFD884).w,d4         ; Set the map tile to use priority.
 loc_10FA6:
 		bsr.s	loc_10F3e		; Convert the address and write the map tile onto the screen.
 		rts		              ; Return.
@@ -2620,7 +2620,7 @@ loc_1105c:
 		bne.s   loc_110b8
 		move.l	$34(a0),d1
 		move.l	$30(a0),d2
-		add.l   d1,d2
+		add.l	d1,d2
 		cmpi.l	#$00800000,d2
 		bge.s   loc_1107c
 		addi.l	#$01000000,d2
@@ -2645,7 +2645,7 @@ loc_110a0:
 loc_110ac:
 		move.w	d2,$20(a0)
 		move.l	$2C(a0),d3
-		add.l   d3,$24(a0)
+		add.l	d3,$24(a0)
 loc_110b8:
 		rts
 
@@ -2668,7 +2668,7 @@ loc_110d2:
 loc_110e2:
 		move.l	d2,$20(a0)
 		move.l	$2C(a0),d3
-		add.l   d3,$24(a0)
+		add.l	d3,$24(a0)
 		rts
 
 ; ======================================================================
@@ -2750,7 +2750,7 @@ BuildSprites_Main:		             ; $11170
 loc_1118A:
 		move.b	(a1)+,d0               ; Move the sprite's relative Y axis displacement into d0.
 		ext.w   d0		     ; Extend to a word size.
-		add.w   d2,d0		  ; Add the values together to get the first sprite word.
+		add.w	d2,d0		  ; Add the values together to get the first sprite word.
 		move.w	d0,(a2)+               ; Write to the sprite table.
 		move.b	(a1)+,(a2)+            ; Set sprite size.
 		move.b	d6,(a2)+               ; Set link data.
@@ -2766,7 +2766,7 @@ loc_1118A:
 loc_111b0:
 		addq.w	#1,a1		  ; Load the next set of mappings.
 		ext.w   d0		     ; Extend to a word size.
-		add.w   d3,d0		  ; Add the horizontal position with it to get the proper horizontal position.
+		add.w	d3,d0		  ; Add the horizontal position with it to get the proper horizontal position.
 		move.w	d0,d4		  ; Copy to d4.
 		subi.w	#$41,d4		; Subtract 65 pixels.
 		cmpi.w	#$17F,d4               ; Is it lower than 383 pixels?
@@ -2907,11 +2907,11 @@ ObjectsList:				     ; $112B0
 loc_1130c:
 		move.l	($FFFFD004).w,d0
 		move.l	($FFFFFFA8).w,d1
-		add.l   d0,d1
+		add.l	d0,d1
 		move.l	d1,($FFFFFFA8).w
 		move.l	($FFFFD008).w,d0
 		move.l	($FFFFFFA4).w,d1
-		add.l   d0,d1
+		add.l	d0,d1
 		move.l	d1,($FFFFFFA4).w
 		rts
 
@@ -2987,7 +2987,7 @@ loc_113CE:
 		movem.w d4/d6-d7/a6,-(sp)
 		lea	($FFFFC800).w,a6
 		lsl.w   #5,d6
-		add.w   d7,d6
+		add.w	d7,d6
 		move.b	d4,(a6,d6.w)
 		movem.w (sp)+,d4/d6-d7/a6
 		rts
@@ -3132,7 +3132,7 @@ loc_114FE:
 		moveq	#0,d0
 		move.b	(a6)+,d0
 		beq.s	loc_1153a
-		add.b   d0,($FFFFD883).w
+		add.b	d0,($FFFFD883).w
 		subq.b	#1,d0
 loc_11522:
 		move.w	#8,(a0)
@@ -3145,7 +3145,7 @@ loc_1153a:
 		moveq	#0,d0
 		move.b	(a6)+,d0
 		beq.s	loc_11560
-		add.b   d0,($FFFFD883).w
+		add.b	d0,($FFFFD883).w
 		subq.b	#1,d0
 loc_11546:
 		move.w	#8,(a0)
@@ -3203,8 +3203,8 @@ loc_11594:
 
 
 loc_115c0:
-		add.w   $30(a0),d7
-		add.w   $24(a0),d6
+		add.w	$30(a0),d7
+		add.w	$24(a0),d6
 		cmpi.w	#$80,d7
 		bge.s   loc_115d2
 		addi.w	#$100,d7
@@ -3468,14 +3468,14 @@ loc_117c0:
 		lsl.w   #3,d1
 		move.w	$20(a0),d3               ; Move the object's horizontal position into d3.
 		lea	loc_11878(pc),a6         ; Load the TODO address into a6.
-		add.w   (a6,d0.w),d3
+		add.w	(a6,d0.w),d3
 		move.w	d3,d2
 		addq.l	#2,a6
-		add.w   (a6,d0.w),d3
+		add.w	(a6,d0.w),d3
 		move.w	$20(a1),d5               ; Move TODO's horizontal position into d5.
-		add.w   loc_11878(pc,d1.w),d5
+		add.w	loc_11878(pc,d1.w),d5
 		move.w	d5,d4
-		add.w   loc_1187a(pc,d1.w),d5
+		add.w	loc_1187a(pc,d1.w),d5
 		cmp.w   d2,d4
 		blt.s   loc_11812
 		cmp.w   d3,d4
@@ -3503,13 +3503,13 @@ loc_11826:
 		bgt.s   loc_11874
 loc_1182e:
 		move.w	$24(a0),d3
-		add.w   loc_1187c(pc,d0.w),d3
+		add.w	loc_1187c(pc,d0.w),d3
 		move.w	d3,d2
-		add.w   loc_1187e(pc,d0.w),d3
+		add.w	loc_1187e(pc,d0.w),d3
 		move.w	$24(a1),d5
-		add.w   loc_1187c(pc,d1.w),d5
+		add.w	loc_1187c(pc,d1.w),d5
 		move.w	d5,d4
-		add.w   loc_1187e(pc,d1.w),d5
+		add.w	loc_1187e(pc,d1.w),d5
 		cmp.w   d2,d4
 		blt.s   loc_11854
 		cmp.w   d3,d4
@@ -8074,7 +8074,7 @@ loc_14bdc:
 		bpl.s   loc_14be8
 		neg.w   d0
 loc_14be8:
-		add.w   d0,d7
+		add.w	d0,d7
 		bsr.w	loc_1157c
 		tst.b	d4
 		beq.s	loc_14bf6
@@ -8157,7 +8157,7 @@ loc_14cc4:
 		bpl.s   loc_14cd0
 		neg.w   d0
 loc_14cd0:
-		add.w   d0,d7
+		add.w	d0,d7
 		bsr.w	loc_1157c
 		tst.b	d4
 		beq.s	loc_14cde
@@ -10124,7 +10124,7 @@ loc_16456:
 		bra.s	loc_16486
 
 loc_16482:
-		add.w   d0,d6
+		add.w	d0,d6
 		addq.w	#8,d6
 loc_16486:
 		move.w	d6,$24(a0)
@@ -10528,14 +10528,14 @@ loc_1686c:
 		bmi.s   loc_16884
 		cmp.l   d6,d7
 		bge.s   loc_16882
-		add.l   $18(a0),d7
+		add.l	$18(a0),d7
 loc_16882:
 		bra.s	loc_1688c
 
 loc_16884:
 		cmp.l   d6,d7
 		ble.s   loc_1688c
-		add.l   $18(a0),d7
+		add.l	$18(a0),d7
 loc_1688c:
 		move.l	d7,$34(a0)
 loc_16890:
