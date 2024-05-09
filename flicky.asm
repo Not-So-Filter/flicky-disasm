@@ -269,7 +269,7 @@ loc_33c:
 		add.w   (a0)+,d0		 ; Start adding the opcode's bytes together, into d0.
 		dbf	d2,loc_33c               ; Repeat for the ROM's end address (lower word).
 		dbf	d1,loc_33c               ; Repeat for the ROM's end address (higher word).
-		cmp.w   Checksum,d0              ; Does it match the checksum's header value?
+		cmp.w	Checksum.w,d0		; Does it match the checksum's header value?
 		beq.s	loc_350		  ; If it does, carry on with the game.
 		bra.w	loc_3e4		  ; Otherwise, trap in an endless loop.
 loc_350:
@@ -311,7 +311,7 @@ loc_3aa:
 loc_3D8:
 		move.l	(a0)+,(a1)+              ; Write first 4 bytes of the code into RAM.
 		dbf	d0,loc_3d8               ; Repeat until the whole code block has been written.
-		jmp     ($FF0000).l              ; Run code from RAM.
+		jmp	($FF0000).l              ; Run code from RAM.
 
 ; ======================================================================
 
@@ -539,7 +539,7 @@ loc_906:
 		andi.w	#$FF,d0		  ; Get the low data length byte on its own.
 		ori.w   #$9300,d0		; Set as low DMA size byte.
 		move.w	d0,(a6)		  ; Write to the VDP.
-		lsr.w   #8,d1		    ; Shift to get the byte on its own.
+		lsr.w	#8,d1		    ; Shift to get the byte on its own.
 		ori.w   #$9400,d1		; Get the high data length byte on its own.
 		move.w	d1,(a6)		  ; Write to the VDP.
 		swap    d1		       ; Swap register values; get the clear high word on low.
@@ -584,7 +584,7 @@ loc_97c:
 		andi.w	#$FF,d0
 		ori.w   #$9300,d0
 		move.w	d0,(a6)
-		lsr.w   #8,d1
+		lsr.w	#8,d1
 		ori.w   #$9400,d1
 		move.w	d1,(a6)
 		swap    d1
@@ -592,7 +592,7 @@ loc_97c:
 		andi.w	#$FF,d0
 		ori.w   #$9500,d0
 		move.w	d0,(a6)
-		lsr.w   #8,d1		    ; Shift to get the byte on its own.
+		lsr.w	#8,d1		    ; Shift to get the byte on its own.
 		ori.w   #$9600,d1		; Get the high address byte on its own.
 		move.w	d1,(a6)		  ; Write to the VDP.
 		move.w	#$97C0,(a6)              ; Set DMA mode to VRAM copy.
@@ -647,22 +647,22 @@ loc_a12:
 
 loc_a1a:
 		lea	($C00004).l,a6
-		lsr.w   #1,d0
+		lsr.w	#1,d0
 		swap    d1
 		move.w	d0,d1
 		andi.w	#$FF,d0
 		ori.w   #$9300,d0
 		move.w	d0,(a6)
-		lsr.w   #8,d1
+		lsr.w	#8,d1
 		ori.w   #$9400,d1
 		move.w	d1,(a6)
 		swap    d1
-		lsr.w   #1,d1
+		lsr.w	#1,d1
 		move.w	d1,d0
 		andi.w	#$FF,d0
 		ori.w   #$9500,d0
 		move.w	d0,(a6)
-		lsr.w   #8,d1
+		lsr.w	#8,d1
 		ori.w   #$9680,d1
 		move.w	d1,(a6)
 		move.w	#$977F,(a6)
@@ -704,9 +704,9 @@ loc_A76:
 		swap    d1		       ; Swap register halves; get full address.
 		move.l	d1,(a6)		  ; Set correct VRAM write address location.
 		addq.w	#3,d0		    ; TODO
-		lsr.w   #2,d0		    ; Divide by 4 to deal with longword writes.
+		lsr.w	#2,d0		    ; Divide by 4 to deal with longword writes.
 		move.w	d0,d1		    ; Copy to another register to handle tenths.
-		lsr.w   #3,d1		    ; Divide by 8 for 8 move instructions.
+		lsr.w	#3,d1		    ; Divide by 8 for 8 move instructions.
 		bra.s	loc_abe		  ; Set to write to the VDP.
 
 ; Draws a tile onto the screen.
@@ -735,7 +735,7 @@ loc_aca:
 		      ; TODO - ANNOTATE ME
 NemDec:				          ; $AD4
 		movem.l d0-a1/a3-a5,-(sp)        ; Store used registers onto the stack.
-		lea	loc_B5A,a3
+		lea	loc_B5A.l,a3
 		lea	($C00000).l,a4           ; Set to load to the VDP.
 		bra.s	NemDec_Main              ; Run the main decompression routine.
 
@@ -743,7 +743,7 @@ NemDec:				          ; $AD4
 
 NemDectoRAM:				     ; $AE6
 		movem.l d0-a1/a3-a5,-(sp)        ; Store used registers onto the stack.
-		lea	loc_b70,a3
+		lea	loc_b70.l,a3
 
 NemDec_Main:				     ; $AF0
 		lea	($FFFFE630).w,a1         ; Set RAM address to decompress to.
@@ -773,13 +773,13 @@ loc_B2C:
 		move.w	d1,d0
 		andi.w	#$F,d1
 		andi.w	#$F0,d0
-		lsr.w   #4,d0
+		lsr.w	#4,d0
 loc_B38:
 		lsl.l   #4,d4
 		or.b    d1,d4
 		subq.w	#1,d3
 		bne.s   loc_b46
-		jmp     (a3)		     ; TODO
+		jmp	(a3)		     ; TODO
 
 ; ======================================================================
 
@@ -904,7 +904,7 @@ loc_bdc:
 
 loc_bf6:
 		move.w	d5,d6
-		lsr.w   d0,d6
+		lsr.w	d0,d6
 		move.b	d6,(a0)+
 		move.w	d0,d6
 loc_bfe:
@@ -936,7 +936,7 @@ loc_c16:
 		move.w	d6,d7
 		sub.w	d0,d7
 		move.w	d5,d1
-		lsr.w   d7,d1
+		lsr.w	d7,d1
 		add.w   d0,d0
 		and.w   loc_c38(pc,d0.w),d1
 		rts		              ; Return.
@@ -945,7 +945,7 @@ loc_c16:
 
 loc_c26:
 		bsr.s	loc_c16
-		lsr.w   #1,d0
+		lsr.w	#1,d0
 loc_c2a:
 		sub.w	d0,d6
 		cmpi.w	#9,d6
@@ -1009,7 +1009,7 @@ loc_C96:
 
 loc_ca8:
 		beq.s	loc_cbc
-		lsr.w   d7,d1
+		lsr.w	d7,d1
 		move.w	a5,d0
 		add.w   d0,d0
 		and.w   loc_c38(pc,d0.w),d1
@@ -1099,13 +1099,13 @@ loc_D28:
 		cmpi.w	#$40,d1
 		bcc.s   loc_D3c
 		moveq	#6,d0
-		lsr.w   #1,d2
+		lsr.w	#1,d2
 loc_D3c:
 		bsr.w	loc_c2a
 		andi.w	#$F,d2
-		lsr.w   #4,d1
+		lsr.w	#4,d1
 		add.w   d1,d1
-		jmp     loc_D98(pc,d1.w)
+		jmp	loc_D98(pc,d1.w)
 
 ; ======================================================================
 
@@ -1180,7 +1180,7 @@ loc_Da8:
 		subq.w	#1,a0
 loc_Db2:
 		move.w	a0,d0
-		lsr.w   #1,d0
+		lsr.w	#1,d0
 		bcc.s   loc_Dba
 		addq.w	#1,a0
 loc_Dba:
@@ -1461,7 +1461,7 @@ loc_FB4:
 		move.w	d0,d1
 		andi.w	#$F,d1
 		mulu.w  d2,d1
-		lsr.w   #6,d1
+		lsr.w	#6,d1
 		or.w    d1,d3
 		dbf	d5,loc_Fb4
 		move.w	d3,(a0)+
@@ -1598,11 +1598,11 @@ loc_10B8:
 loc_10C4:
 		addq.w	#1,a1		    ; Increment Z80 RAM address.
 		dbf	d0,loc_10b4              ; Repeat for the rest.
-		lsr.w   #1,d2		    ; Shift right.
+		lsr.w	#1,d2		    ; Shift right.
 		bcc.s   loc_10d0		 ; If the bit didn't contain a '1', skip the Z80 reset.
 		bsr.s	ResettheZ80              ; Otherwise, reset the Z80.
 loc_10d0:
-		lsr.w   #1,d2		    ; Shift right again.
+		lsr.w	#1,d2		    ; Shift right again.
 		bcs.s   loc_10d6		 ; If the bit was set, skip the Z80 start.
 loc_10d4:
 		bsr.s	loc_1084		 ; Start the Z80.
@@ -1731,14 +1731,14 @@ loc_119E:
 		or.w    d1,d0		    ; Add onto the tenth.
 		move.w	(a5),d1		  ; Reload the palette value.
 		andi.w	#$100,d1		 ; Get the hundredth; strip the rest of the bits except for the higher N bit.
-		lsr.w   #3,d1		    ; Divide to get into the byte range.
+		lsr.w	#3,d1		    ; Divide to get into the byte range.
 		or.w    d1,d0		    ; Add onto the rest of the bits.
 		add.w   d0,d0		    ; Multiply by 2 to account for the word size.
 		move.w	(a5)+,d2		 ; Reload the palette value.
 		move.w	d2,d1		    ; Copy into d1.
 		andi.w	#$0EEE,d1		; Ensure that white is the highest value attainable.
 		move.w	d1,(a0,d0.w)             ; Load to the appropriate position in the palette buffer.
-		lsr.w   #1,d2		    ; Shift right to check for the presence of the T bit.
+		lsr.w	#1,d2		    ; Shift right to check for the presence of the T bit.
 		bcc.s   loc_119E		 ; If it's not there, continue decoding palettes.
 		movem.l (sp)+,d0-d2/a0           ; Restore register values.
 		rts		              ; Return.
@@ -1866,9 +1866,9 @@ loc_12BC:
 		move.l	d1,(a6)		  ; Write to the VDP; set VDP mode.
 loc_12E6:
 		addq.w	#3,d0		    ; TODO
-		lsr.w   #2,d0		    ; Divide by 4 to deal with longword writes.
+		lsr.w	#2,d0		    ; Divide by 4 to deal with longword writes.
 		move.w	d0,d1		    ; Copy to another register to handle tenths.
-		lsr.w   #3,d1		    ; Divide by 8 for 8 move instructions.
+		lsr.w	#3,d1		    ; Divide by 8 for 8 move instructions.
 		bra.s	loc_1300		 ; Set to write to the VDP.
 
 loc_12F0:
@@ -1999,10 +1999,10 @@ loc_10034:
 		move.w	#$101,($FFFFD82C).w      ; Set the BCD and hex level round value to 0101.
 		move.w	#$2500,sr		; Enable VBlank.
 MainGameLoop:
-		movea.w StartofROM+2,sp          ; Restore stack pointer back to $(XXXX)FF70.
+		movea.w StartofROM+2.w,sp          ; Restore stack pointer back to $(XXXX)FF70.
 		move.w	($FFFFFFC0).w,d0         ; Set game mode.
 		andi.l	#$0000007C,d0            ; Game mode limit.
-		jsr     GameModeArray(pc,d0.w)   ; Load appropriate game mode.
+		jsr	GameModeArray(pc,d0.w)   ; Load appropriate game mode.
 		addq.w	#1,($FFFFFF92).w         ; Increment game mode timer.
 		bra.s	MainGameLoop             ; Loop, updating game mode.
 
@@ -2031,17 +2031,17 @@ GameModeArray:
 ; ======================================================================
 
 loc_100CC:
-		jmp     SegaScreen               ; Jump to the Sega screen code handler.
+		jmp	SegaScreen.w               ; Jump to the Sega screen code handler.
 
 ; ======================================================================
 
 loc_100D0:
-		jmp     loc_4dc		  ; Checks to see if the Sega screen is finished.
+		jmp	loc_4dc.w		  ; Checks to see if the Sega screen is finished.
 
 ; ======================================================================
 
 loc_100d4:
-		jsr     ($FFFFFBB4).w            ; Clear and initialise some registers and addresses.
+		jsr	($FFFFFBB4).w            ; Clear and initialise some registers and addresses.
 		lea	($FFFFD000).w,a6         ; TODO IMPORTANT
 		moveq	#0,d7		    ; Clear d7.
 		move.w	#$1FF,d6		 ; Set to clear $800 bytes.
@@ -2051,53 +2051,53 @@ loc_100E2:
 		bsr.w	loc_113bc		; Clear TODO.
 		bsr.w	loc_110fe		; Clear TODO object RAM?
 		move.w	#$8000,($FFFFD884).w     ; Set mappings incrementer to use priority 1.
-		jmp     loc_101a8		; Dump some compressed graphics into VRAM.
+		jmp	loc_101a8		; Dump some compressed graphics into VRAM.
 
 ; ======================================================================
 
 loc_100Fc:
 		move.w	#$200,d0		 ; Set VRAM address to be converted.
-		jsr     ($FFFFFB8A).w            ; Convert it and send it to the VDP.
+		jsr	($FFFFFB8A).w            ; Convert it and send it to the VDP.
 		lea	loc_16e58,a0             ; Load level stuff's compressed art into a0.
-		jsr     ($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
+		jsr	($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
 		move.w	#$400,d0		 ; Set VRAM address to be converted.
-		jsr     ($FFFFFB8A).w            ; Convert it and send it to the VDP.
+		jsr	($FFFFFB8A).w            ; Convert it and send it to the VDP.
 		lea	loc_187d4,a0             ; Load grabbable items' compressed art into a0.
-		jsr     ($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
+		jsr	($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
 		move.b	#1,($FFFFD88E).w         ; Set palette entry increment to 1.
 loc_10126:
 		moveq	#$20,d0		  ; Set to write to VRAM address $20.
 		lea	($C00004).l,a6           ; Load VDP data port into a6.
-		jsr     ($FFFFFB8A).w            ; Convert to address.
-		lea	loc_2372,a0              ; Load start of compressed ASCII symbols.
+		jsr	($FFFFFB8A).w            ; Convert to address.
+		lea	loc_2372.w,a0              ; Load start of compressed ASCII symbols.
 		moveq	#$20,d0		  ; Set to use palette entry 2 and 0.
 		add.b   ($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
 		move.w	#(loc_2372_End-loc_2372)/8,d1 ; Get the length of the data, divided by 8.
-		jsr     ($FFFFFA8E).w            ; Decompress it.
+		jsr	($FFFFFA8E).w            ; Decompress it.
 		moveq	#$30,d0		  ; Set to write to VRAM address $30.
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
-		jsr     ($FFFFFB8A).w            ; Convert to address.
+		jsr	($FFFFFB8A).w            ; Convert to address.
 		lea	loc_185fc,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$20,d0		  ; Set to use palette entry 2 and 0.
 		add.b   ($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
-		jsr     ($FFFFFA8E).w            ; Decompress it.
+		jsr	($FFFFFA8E).w            ; Decompress it.
 		move.w	#$120,d0		 ; Set to write to VRAM address $120.
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
-		jsr     ($FFFFFB8A).w            ; Convert to an address.
-		lea	loc_2372,a0              ; Load the start of the compressed ASCII symbols.
+		jsr	($FFFFFB8A).w            ; Convert to an address.
+		lea	loc_2372.w,a0              ; Load the start of the compressed ASCII symbols.
 		moveq	#$30,d0		  ; Set to use palette line 3 and 0.
 		add.b   ($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
 		move.w	#(loc_2372_End-loc_2372)/8,d1 ; Get the length of the data, divided by 8.
-		jsr     ($FFFFFA8E).w            ; Decompress it.
+		jsr	($FFFFFA8E).w            ; Decompress it.
 		move.w	#$130,d0		 ; Set to write to VRAM address $130.
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
-		jsr     ($FFFFFB8A).w            ; Convert to an address.
+		jsr	($FFFFFB8A).w            ; Convert to an address.
 		lea	loc_185fc,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$30,d0		  ; Set to use palette line 3 and 0.
 		add.b   ($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
-		jsr     ($FFFFFA8E).w            ; Decompress it.
+		jsr	($FFFFFA8E).w            ; Decompress it.
 		rts		              ; Return.
 
 ; ======================================================================
@@ -2105,13 +2105,13 @@ loc_10126:
 loc_101a8:
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
 		move.w	#$640,d0		 ; Set VRAM address to be converted.
-		jsr     ($FFFFFB8A).w            ; Convert it and write it to the VDP.
+		jsr	($FFFFFB8A).w            ; Convert it and write it to the VDP.
 		lea	loc_1993e,a0             ; Load nemesis compressed points, Iggy, diamond and bonus points model graphics into a0.
-		jsr     ($FFFFFA82).w            ; Decompress and load into VRAM.
+		jsr	($FFFFFA82).w            ; Decompress and load into VRAM.
 		move.w	#$693,d0		 ; Set VRAM address to be converted.
-		jsr     ($FFFFFB8A).w            ; Convert it and write it to the VDP.
+		jsr	($FFFFFB8A).w            ; Convert it and write it to the VDP.
 		lea	loc_18754,a0             ; Load nemesis compressed graphics source.      TODO - Possibly the exit sign?
-		jsr     ($FFFFFA82).w            ; Decompress it and load into VRAM.
+		jsr	($FFFFFA82).w            ; Decompress it and load into VRAM.
 		rts		              ; Return.
 
 ; ======================================================================
@@ -2146,12 +2146,12 @@ loc_10CE0:
 		dbf	d0,loc_10Ce0             ; Repeat until CRAM is fully cleared.
 		moveq	#0,d2		    ; Set VRAM address to dump to.
 		move.w	#$A800,d0		; Set data length.
-		jmp     ($FFFFFAD6).w            ; Write onto the screen.
+		jmp	($FFFFFAD6).w            ; Write onto the screen.
 
 ; ======================================================================
 
 loc_10CF6:
-		jsr     ($FFFFFB30).w            ; Load the sound driver to the Z80.
+		jsr	($FFFFFB30).w            ; Load the sound driver to the Z80.
 		lea	(loc_101d4).l,a1         ; Load the Z80 pointers list into a1.
 		bsr.s	loc_10d24		; Write first set of pointers to the Z80.
 		bsr.s	loc_10d24		; And write the next set of pointers.
@@ -2159,7 +2159,7 @@ loc_10CF6:
 		move.w	#$1C00,d1		; Set offset in Z80 RAM to load to.
 		moveq	#1,d2		    ; Reset the Z80, skip the Z80 start.
 		lea	loc_10d1a(pc),a0         ; Load the Z80 code into a0.
-		jsr     ($FFFFFB54).w            ; Write the Z80 code into the Z80.
+		jsr	($FFFFFB54).w            ; Write the Z80 code into the Z80.
 		clr.w   ($FFFFFFA2).w
 		rts		              ; Return.
 
@@ -2182,15 +2182,15 @@ loc_10d24:
 		moveq	#2,d2		    ; Set to skip Z80 start and reset.
 		movem.w (a1)+,d0-d1/a0           ;
 		suba.l	#$00010000,a0            ; $FF01E0 is the source location. TODO
-		jmp     ($FFFFFB54).w            ; Write the code onto the Z80.
+		jmp	($FFFFFB54).w            ; Write the code onto the Z80.
 
 ; ======================================================================
 
 loc_10d34:
 		move.l	a0,-(sp)
-		jsr     ($FFFFFB36).w            ; Stop the Z80.
+		jsr	($FFFFFB36).w            ; Stop the Z80.
 		move.b	d0,($A01C09).l
-		jsr     ($FFFFFB3C).w            ; Start the Z80.
+		jsr	($FFFFFB3C).w            ; Start the Z80.
 		movea.l (sp)+,a0
 		rts
 
@@ -2382,7 +2382,7 @@ VBlank:				          ; $10E88
 		lea	($C00004).l,a6           ; Load VDP control port to a6.
 		move.w	($FFFFFF96).w,d0         ; Load the VBlank routine value into d0.
 		andi.w	#$C,d0		   ; Keep within a multiple of 4; no more than 4 ($C/4 = 4, including 0) VBlank routines.
-		jsr     VBlank_RoutineTable(pc,d0.w) ; Jump to VBlank routine.
+		jsr	VBlank_RoutineTable(pc,d0.w) ; Jump to VBlank routine.
 		clr.w   ($FFFFFF96).w            ; Clear mirrored VBlank routine so you can return from WaitforVBlank.
 		movem.l (sp)+,d0-a6              ; Restore register values.
 		rte		              ; Return from the exception.
@@ -2404,11 +2404,11 @@ loc_10eb8:
 
 loc_10eba:
 		bsr.w	loc_1132a		; Update scrolling.
-		jsr     ($FFFFFB12).w            ; Update controller array.
+		jsr	($FFFFFB12).w            ; Update controller array.
 		move.w	#$F550,d1		; RAM address to dump from (sprite table).
 		move.w	#$BE00,d2		; VRAM address to convert and load to.
 		move.w	#$0200,d0		; Amount of bytes to dump.
-		jsr     ($FFFFFACA).w            ; Run the subroutine to do that.
+		jsr	($FFFFFACA).w            ; Run the subroutine to do that.
 		moveq	#$F,d7		   ; Set to repeat for $20 palettes.
 		lea	($FFFFF7E0).w,a0         ; Load palette buffer into a0.
 		lea	($FFFFF860).w,a1         ; Load target palette space into a1.
@@ -2431,7 +2431,7 @@ loc_10F06:
 		move.w	#$F7E0,d1		; RAM address to dump from.
 		moveq	#0,d2		    ; Set palette line to dump to as 0.
 		move.w	#$80,d0		  ; Set data length.
-		jsr     ($FFFFFAC4).w            ; Dump to CRAM.
+		jsr	($FFFFFAC4).w            ; Dump to CRAM.
 loc_10F14:
 		move.w	#$8100,d0		; Load VDP register $01's command word into d0.
 		move.b	($FFFFFF71).w,d0         ; Load VDP register $01's stored value into d0.
@@ -2451,7 +2451,7 @@ loc_10F24:
 				   ; TODO - CalcVRAMAddress?
 loc_10F2E:
 		lsl.l   #2,d5		    ; Shift to get boundary value in high word.
-		lsr.w   #2,d5		    ; Restore address.
+		lsr.w	#2,d5		    ; Restore address.
 		bset    #$E,d5		   ; Set to VRAM write.
 		swap    d5		       ; Convert to VDP address.
 		rts		              ; Return.
@@ -2482,7 +2482,7 @@ loc_10F4e
 		lea	($C00004).l,a4           ; Load the VDP control port into a4.
 		lea	($C00000).l,a3           ; Load the VDP data port into a3.
 		lsl.l   #2,d5		    ; Get correct VRAM address boundary.
-		lsr.w   #2,d5		    ; Restore to get offset in that boundary.
+		lsr.w	#2,d5		    ; Restore to get offset in that boundary.
 		bset    #$E,d5		   ; Set to VRAM write.
 		swap    d5		       ; Swap to get the full VDP command.
 		move.l	d5,(a4)		  ; Write to the VDP.
@@ -2574,7 +2574,7 @@ loc_10FFA:
 		moveq	#0,d1		    ; Clear d1.
 		move.b	(a6)+,d1		 ; Move highest bit into d1.
 		move.w	d1,d4		    ; Copy to d4.
-		lsr.w   #4,d4		    ; Get only the upper nybble (the upper number).
+		lsr.w	#4,d4		    ; Get only the upper nybble (the upper number).
 		addq.w	#2,d5
 		movem.l d0-d1/d5,-(sp)           ; Store used registers onto the stack.
 		bsr.w	loc_11036		; TODO
@@ -2869,7 +2869,7 @@ LoadObjects:				     ; $1129E
 		move.w	(a0),d0		  ; Move the object's entry into d0.
 		beq.s	loc_112ac		; If there's no entry to be loaded, branch.
 		andi.w	#$7FFC,d0		; Get the 2nd byte and keep within a multiple of 4.
-		jsr     ObjectsList(pc,d0.w)     ; Run object's code.
+		jsr	ObjectsList(pc,d0.w)     ; Run object's code.
 loc_112ac:
 		move.w	(sp)+,d0		 ; Restore repeat times.
 		rts		              ; Return.
@@ -3189,8 +3189,8 @@ loc_11594:
 		and.l   d4,d6
 		subi.w	#$80,d7
 		subi.w	#$80,d6
-		lsr.w   #3,d7
-		lsr.w   #3,d6
+		lsr.w	#3,d7
+		lsr.w	#3,d6
 		lsl.w   #5,d6
 		adda.l  d7,a1
 		adda.l  d6,a1
@@ -3220,8 +3220,8 @@ loc_115DC:
 		and.l   d4,d6
 		subi.w	#$80,d7
 		subi.w	#$80,d6
-		lsr.w   #3,d7
-		lsr.w   #3,d6
+		lsr.w	#3,d7
+		lsr.w	#3,d6
 		lsl.w   #5,d6
 		adda.l  d7,a1
 		adda.l  d6,a1
@@ -3384,7 +3384,7 @@ loc_11740:
 		addq.b	#1,d0
 		andi.b	#$F,d0
 		move.b	d0,($FFFFD280).w
-		lsr.w   #2,d0
+		lsr.w	#2,d0
 		lsl.w   #1,d0
 		move.w	loc_1175c(pc,d0.w),($FFFFD884).w
 		rts
@@ -3444,9 +3444,9 @@ loc_1179A:
 loc_117aa:
 		move.w	d2,($FFFFFFAC).w
 		moveq	#-$40,d3
-		jsr     ($FFFFFBA8).w            ; TODO
-		jsr     ($FFFFFB0C).w            ; ''
-		jsr     ($FFFFFB6C).w            ;
+		jsr	($FFFFFBA8).w            ; TODO
+		jsr	($FFFFFB0C).w            ; ''
+		jsr	($FFFFFB6C).w            ;
 		bra.s	loc_1179a		;
 loc_117be:
 		rts		              ; Return.
@@ -3877,7 +3877,7 @@ loc_11b16:
 		lsl.w   #2,d4		    ; Multiply by 4 for 4 byte entry tables.
 		move.w	loc_11b3c(pc,d4.w),d7    ; Get amount of horizontal tiles to write.
 		move.w	loc_11b3c+2(pc,d4.w),d6  ; Get amount of vertical tiles to write.
-		lsr.w   #1,d4		    ; Divide by 2 for 2 byte entry tables.
+		lsr.w	#1,d4		    ; Divide by 2 for 2 byte entry tables.
 		moveq	#-1,d2		   ; Set d2 to $FFFFFFFF (for address).
 		move.w	loc_11b54(pc,d4.w),d2    ; Overwrite lower word with RAM address.
 		movea.l d2,a6		    ; Move the RAM address into a6.
@@ -3959,7 +3959,7 @@ loc_11bc2
 loc_11BC6:
 		move.w	loc_11bdc(pc,d0.w),d1
 		move.w	loc_11bdc+2(pc,d0.w),d4
-		lsr.w   #1,d0		    ; Set to skip every 2 bytes.
+		lsr.w	#1,d0		    ; Set to skip every 2 bytes.
 		moveq	#-1,d2		   ; Set d2 to $FFFFFFFF.
 		move.w	loc_11bf8(pc,d0.w),d2    ; Overwrite lower word with RAM address.
 		lsl.w   #1,d0		    ; Set to skip every 4 bytes.
@@ -4090,7 +4090,7 @@ loc_11cb8:
 
 loc_11cca:
 		lea	loc_11cd4(pc),a1
-		jmp     loc_11d38
+		jmp	loc_11d38
 
 ; ----------------------------------------------------------------------
 
@@ -4106,7 +4106,7 @@ loc_11cd4:
 
 loc_11ce6:
 		lea	loc_11cf0(pc),a1
-		jmp     loc_11d38
+		jmp	loc_11d38
 
 ; ----------------------------------------------------------------------
 
@@ -4127,7 +4127,7 @@ loc_11d06:
 
 loc_11D18:
 		lea	loc_11D22(pc),a1
-		jmp     loc_11d38
+		jmp	loc_11d38
 
 ; ----------------------------------------------------------------------
 ; TODO
@@ -4162,7 +4162,7 @@ loc_11D5E:
 		bne.s   loc_11d7e
 		bsr.w	CheckObjectRAM
 		bsr.w	TimerCounter             ; Update timer.
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		movem.l (sp)+,d5-a4
 		bra.s	loc_11d5e
 
@@ -4414,13 +4414,13 @@ loc_11fac:
 TitleScreen_Load:				; $11FB0
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
 		move.w	#$740,d0		 ; Set the VRAM address value to be converted.
-		jsr     ($FFFFFB8A).w            ; Convert it and write it into the VDP.
+		jsr	($FFFFFB8A).w            ; Convert it and write it into the VDP.
 		lea	loc_19eee,a0             ; Load the nemesis compressed art into a0.
-		jsr     ($FFFFFA82).w            ; Decompress and load into VRAM.
+		jsr	($FFFFFA82).w            ; Decompress and load into VRAM.
 		clr.b   ($FFFFD88E).w            ; Clear palette entry increment.
 		bsr.w	loc_10126		; Reload the ASCII art.
 		lea	Pal_Main,a5              ; Load the main palette source into a5.
-		jsr     ($FFFFFBBA).w            ; Decode and load into the appropriate position in the palette buffer.
+		jsr	($FFFFFBBA).w            ; Decode and load into the appropriate position in the palette buffer.
 		lea	Pal_TitleScreen(pc),a0   ; Load the title screen palette into a0.
 		lea	($FFFFF840).w,a1         ; Load buffer space for the last palette line.
 		moveq	#3,d0		    ; Set to write 8 palettes.
@@ -4469,9 +4469,9 @@ loc_12062:
 		bsr.w	CheckObjectRAM           ; Load object code, convert to sprites, etc.
 		clr.w   ($FFFFFF92).w            ; Clear the game mode timer.
 		move.b	#$85,d0		  ; Load the title screen music ID.
-		jsr     ($FFFFFB66).w            ; Play it.
-		jsr     ($FFFFFB6C).w            ; ''
-		jmp     ($FFFFFB6C).w            ; ''
+		jsr	($FFFFFB66).w            ; Play it.
+		jsr	($FFFFFB6C).w            ; ''
+		jmp	($FFFFFB6C).w            ; ''
 
 ; ======================================================================
 
@@ -4572,7 +4572,7 @@ loc_12146:
 		move.w	#$38,($FFFFFFC0).w       ; Load the demo TODO.
 loc_1216a:
 		bsr.w	CheckObjectRAM           ; Check if any objects exist, and run their code if they do.
-		jmp     ($FFFFFB6C).w            ; TODO
+		jmp	($FFFFFB6C).w            ; TODO
 
 ; ======================================================================
 ; Characters on the title screen
@@ -4632,7 +4632,7 @@ loc_121cc:
 loc_121E6:
 		move.w	$3C(a0),d0               ; Load object's routine counter value into d0.
 		andi.w	#$7C,d0		  ; Limit by $7C routines; keep within a multiple of 4.
-		jsr     loc_121f4(pc,d0.w)       ; Jump to that routine.
+		jsr	loc_121f4(pc,d0.w)       ; Jump to that routine.
 		rts		              ; Return.
 
 ; ----------------------------------------------------------------------
@@ -4721,11 +4721,11 @@ loc_12276:
 loc_1228e:
 		moveq	#7,d1
 loc_12290:
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d1,loc_12290
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
 		lea	Pal_Main,a5              ; Load the main palette address into a5.
-		jsr     ($FFFFFBBA).w            ; Load the palettes into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Load the palettes into the palette buffer.
 		clr.l   ($FFFFD87E).w            ; Clear the 1st player's score.
 		clr.b   ($FFFFD887).w            ; TODO
 		bsr.w	loc_1268e		; TODO
@@ -4741,8 +4741,8 @@ loc_122C2:
 		addq.w	#1,d1		    ; Load next subtype.
 		dbf	d0,loc_122c2             ; Repeat $14 times.
 		bsr.w	CheckObjectRAM           ; Check if the code exists, and if it does, run it.
-		jsr     ($FFFFFB6C).w
-		jmp     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -4758,7 +4758,7 @@ loc_122e0:
 loc_12302:
 		bsr.w	loc_11784		; TODO - Fade palettes?
 loc_12306:
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -5093,13 +5093,13 @@ loc_1256e:
 loc_125be:
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
 		lea	Pal_Main,a5              ; Load the main palette source into a5.
-		jsr     ($FFFFFBBA).w            ; Decode the palettes and load them into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Decode the palettes and load them into the palette buffer.
 		lea	Map_LSRound(pc),a6       ; Load the 'ROUND' mappings into a6.
 		bsr.w	WriteASCIIString         ; Dump them onto the screen.
 		move.b	#3,($FFFFD882).w
 		move.b	#1,($FFFFD29A).w
-		jsr     ($FFFFFB6C).w
-		jmp     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ----------------------------------------------------------------------
 
@@ -5145,14 +5145,14 @@ loc_12642:
 		move.w	#$C360,d5		; Set the screen coordinates to write to.
 		moveq	#0,d0		    ; Clear d0.
 		bsr.w	loc_10Ff4		; Write the round number onto the screen.
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
 loc_12656:
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
 		lea	Pal_Main,a5              ; Load the main palette into a5.
-		jsr     ($FFFFFBBA).w            ; Decode the palette and load it into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Decode the palette and load it into the palette buffer.
 		clr.l   ($FFFFD888).w            ; Clear the in-game timer.
 		clr.b   ($FFFFD88D).w            ; Clear the amount of times chicks have been deposited in one level.
 		rts		              ; Return.
@@ -5167,7 +5167,7 @@ loc_1266e:
 		bne.s   loc_12688		; If it isn't, branch.
 		move.w	#$28,($FFFFFFC0).w       ; Set to load the bonus stage.
 loc_12688:
-		jsr     ($FFFFFB6C).w            ; TODO
+		jsr	($FFFFFB6C).w            ; TODO
 		rts		              ; Return.
 
 ; ======================================================================
@@ -5175,7 +5175,7 @@ loc_12688:
 loc_1268e:
 		moveq	#$18,d7		  ; Set to load 6 level pointers depending on the level (see below, level values are in multiples of 4).
 		bsr.w	loc_11764		; Load the right tiles for each group of levels.
-		lsr.w   #2,d0		    ; Clear the first two bits.
+		lsr.w	#2,d0		    ; Clear the first two bits.
 		lsl.w   #2,d0		    ; Restore to original position (This is to keep it within a multiple of 4).
 		lea	BGTileTable_Unk(pc),a0   ; Load the unused level background tiles to a0.
 		move.l	(a0,d0.w),d1             ; Get the correct unused background tiles based on the level.
@@ -5198,7 +5198,7 @@ loc_1268e:
 		moveq	#$20,d7
 		bsr.w	loc_11774
 		subq.b	#1,d0
-		lsr.w   #2,d0
+		lsr.w	#2,d0
 		lsl.w   #2,d0
 		lea	loc_12788(pc),a0         ; TODO IMPORTANT
 		move.l	(a0,d0.w),d1
@@ -5315,7 +5315,7 @@ loc_127e8:
 Level_PalLoad:				   ; $12824
 		moveq	#$30,d7		  ; Set to load $C level pointers depending on the level (see below, level values are in multiples of 2).
 		bsr.w	loc_11764		; Load the right tiles for each group of levels.
-		lsr.w   #2,d0		    ; Clear first two bits.
+		lsr.w	#2,d0		    ; Clear first two bits.
 		lsl.w   #1,d0		    ; Restore the original value, divided by two (table loaded below uses word entries).
 		lea	loc_12866(pc),a0         ; Load the level palette pointer value to a0.
 		moveq	#-1,d1		   ; Set d1 to $FFFFFFFF.
@@ -5494,15 +5494,15 @@ loc_12a8c:
 ; ======================================================================
 
 Level_Load:				      ; $12A94
-		jsr     (loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
+		jsr	(loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
 		lea	Pal_Main,a5              ; Load the main palette address into a5.
-		jsr     ($FFFFFBBA).w            ; Load the palettes into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Load the palettes into the palette buffer.
 		bsr.s	loc_12aba
 		move.w	#$83,d0		  ; Load the level music ID.
-		jsr     ($FFFFFB66).w            ; Play it.
+		jsr	($FFFFFB66).w            ; Play it.
 		bsr.w	loc_12e00
 		bsr.w	loc_12e2e
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -5554,14 +5554,14 @@ loc_12b20:
 loc_12b46:
 		move.w	($FFFFD2A0).w,d0
 		andi.w	#$7FFC,d0
-		jsr     loc_12b6a(pc,d0.w)
+		jsr	loc_12b6a(pc,d0.w)
 		btst	#7,($FFFFFF8F).w         ; Is start being pressed?
 		beq.s	loc_12B5E		; If it isn't, branch.
 		bsr.w	PauseGame		; Pause the game.
 loc_12B5E:
 		bsr.w	loc_12e90
 		bsr.w	loc_10d52
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ----------------------------------------------------------------------
 
@@ -5593,13 +5593,13 @@ loc_12BA2:
 		tst.b	($FFFFD2A4).w
 		beq.s	loc_12bb2
 		bsr.w	loc_10d52
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 
 		bra.s	loc_12ba2
 
 loc_12bb2:
 		move.b	#$82,d0
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 		move.w	#$8000,($FFFFD884).w
 		bsr.w	loc_11e96
 		clr.w   ($FFFFFF92).w
@@ -5624,7 +5624,7 @@ loc_12bdc:
 		addq.b	#5,d0
 		moveq	#$30,d7
 		bsr.w	loc_1176a
-		lsr.w   #3,d0
+		lsr.w	#3,d0
 		cmp.b   loc_12c7c(pc,d0.w),d1
 		bne.s   loc_12c74
 		tst.b	($FFFFD88F).w
@@ -5633,12 +5633,12 @@ loc_12bdc:
 		move.l	loc_12c82(pc,d0.w),($FFFFD262).w
 		moveq	#$A,d1
 loc_12c16:
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d1,loc_12c16
 		lea	($FFFFC040).w,a0
 		move.w	#$54,(a0)
 		move.b	#$E1,d0
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 loc_12c2e:
 		lea	($FFFFFF92).w,a0
 		cmpi.w	#8,(a0)
@@ -5692,7 +5692,7 @@ loc_12c9a:
 		addq.b	#5,d0
 		moveq	#$30,d7
 		bsr.w	loc_1176a
-		lsr.w   #3,d0
+		lsr.w	#3,d0
 		lsl.w   #1,d0
 		move.w	($FFFFD888).w,d1
 		cmp.w   loc_12cce(pc,d0.w),d1
@@ -5720,17 +5720,17 @@ loc_12CDA:
 		bne.s   loc_12cfe
 		moveq	#$1E,d1
 loc_12ce4:
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d1,loc_12ce4
 		move.b	#$84,d0
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 		move.w	#$3C,($FFFFC000).w
 		clr.b   ($FFFFD886).w
 loc_12cfe:
 		bsr.w	loc_111d4
 		move.w	#$B4,d1
 loc_12d06:
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d1,loc_12d06
 		bsr.w	loc_11784
 		move.w	#$40,($FFFFFFC0).w
@@ -5837,16 +5837,16 @@ loc_12df2:
 
 loc_12e00:
 		bsr.w	CheckObjectRAM
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		moveq	#$3C,d2
 loc_12E0A:
 		bsr.w	TimerCounter             ; Update the timer.
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d2,loc_12e0a
 		bsr.w	loc_11caa
 		move.w	#$C,($FFFFC440).w
 		bsr.w	CheckObjectRAM
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		bsr.w	loc_11cca
 		rts
 
@@ -5907,9 +5907,9 @@ loc_12eba:
 		move.l	d0,-(sp)
 		move.b	#1,($FFFFD2A4).w
 		move.b	#$97,d0
-		jsr     ($FFFFFB36).w
+		jsr	($FFFFFB36).w
 		move.b	d0,($A01C09).l
-		jsr     ($FFFFFB3C).w
+		jsr	($FFFFFB3C).w
 		move.l	(sp)+,d0
 		addq.b	#1,($FFFFD882).w
 		bsr.w	loc_11d88
@@ -5928,18 +5928,18 @@ loc_12ee0:
 ; Pause the game.
 ; ======================================================================
 PauseGame:				       ; $12EF4
-		jsr     ($FFFFFB36).w            ; Stop the Z80.
+		jsr	($FFFFFB36).w            ; Stop the Z80.
 		move.b	#1,($A01C10).l
-		jsr     ($FFFFFB3C).w            ; Start the Z80.
+		jsr	($FFFFFB3C).w            ; Start the Z80.
 		move.w	#$58,($FFFFC000).w       ; Load the pause object.
 loc_12F0A:
 		bsr.w	loc_111d4
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		btst	#7,($FFFFFF8F).w
 		beq.s	loc_12f0a
-		jsr     ($FFFFFB36).w
+		jsr	($FFFFFB36).w
 		move.b	#$80,($A01C10).l
-		jsr     ($FFFFFB3C).w
+		jsr	($FFFFFB3C).w
 		clr.w   ($FFFFC000).w
 		rts
 
@@ -5949,7 +5949,7 @@ loc_12f30:
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
 		move.w	#$8F02,($C00004).l       ; Set the VDP auto increment to $02.
 		lea	Pal_Main,a5              ; Load the main palette into a5.
-		jsr     ($FFFFFBBA).w            ; Decode the palettes and write them into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Decode the palettes and write them into the palette buffer.
 		move.w	#$2C,($FFFFF82E).w       ; TODO
 		bsr.w	ClearBonusObjectRAM      ; Clear the allocated object RAM.
 		bsr.w	loc_1268e		; TODO
@@ -5980,9 +5980,9 @@ loc_12F8C:
 		bsr.w	loc_11de6
 		bsr.w	loc_11d88
 		move.b	#$81,d0
-		jsr     ($FFFFFB66).w
-		jsr     ($FFFFFB6C).w
-		jmp     ($FFFFFB6C).w
+		jsr	($FFFFFB66).w
+		jsr	($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -6001,14 +6001,14 @@ loc_12fd4:
 loc_12fdc:
 		move.w	($FFFFD2A6).w,d0
 		andi.w	#$7FFC,d0
-		jsr     loc_13000(pc,d0.w)
+		jsr	loc_13000(pc,d0.w)
 		btst	#7,($FFFFFF8F).w
 		beq.s	loc_12FF4
 		bsr.w	PauseGame		; Pause the game
 loc_12FF4:
 		bsr.w	loc_12e90
 		bsr.w	loc_10d52
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -6031,12 +6031,12 @@ loc_13016:
 		tst.b	($FFFFD2A4).w
 		beq.s	loc_13026
 		bsr.w	loc_10d52
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		bra.s	loc_13016
 
 loc_13026:
 		move.b	#$82,d0
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 		bsr.w	loc_1691c
 loc_13032:
 		bsr.w	CheckObjectRAM
@@ -6078,7 +6078,7 @@ loc_13098:
 		moveq	#$30,d7
 		bsr.w	loc_11764
 		subq.b	#3,d0
-		lsr.w   #2,d0
+		lsr.w	#2,d0
 		lsl.w   #2,d0
 		lea	loc_169f4(pc),a0
 		move.l	(a0,d0.w),($FFFFD282).w
@@ -6115,11 +6115,11 @@ loc_130f8:
 ; ======================================================================
 
 loc_13110:
-		jsr     (loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
+		jsr	(loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
 		clr.b   ($FFFFD88E).w
 		bsr.w	loc_10126
 		lea	Pal_Main,a5
-		jsr     ($FFFFFBBA).w
+		jsr	($FFFFFBBA).w
 		move.w	#$800,($FFFFF7E0).w
 		bsr.w	loc_13566
 		move.w	#$2700,sr
@@ -6127,22 +6127,22 @@ loc_13110:
 		move.w	#loc_135E8_End-loc_135E8,d0 ; Data length.
 		move.w	#$125B,d1		; Relative address in Z80 RAM.
 		lea	loc_135e8,a0             ; Data location.
-		jsr     ($FFFFFB54).w
+		jsr	($FFFFFB54).w
 		move.w	#$2500,sr
 		move.b	#$81,d0		  ; Music?
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 		clr.w   ($FFFFFF92).w
-		jsr     ($FFFFFB6C).w
-		jmp     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
 loc_13162:
 		move.w	($FFFFD29E).w,d0
 		andi.w	#$7FFC,d0
-		jsr     loc_13176(pc,d0.w)
+		jsr	loc_13176(pc,d0.w)
 		bsr.w	CheckObjectRAM
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ----------------------------------------------------------------------
 
@@ -6201,7 +6201,7 @@ loc_1321a:
 		bset    #7,($FFFFD29E).w
 		bne.s   loc_1325a
 		lea	Pal_Main,a5
-		jsr     ($FFFFFBBA).w
+		jsr	($FFFFFBBA).w
 		move.w	#$0EEE,($FFFFF7E6).w
 		clr.l   ($FFFFFFB8).w
 		clr.l   ($FFFFFFBC).w
@@ -6236,7 +6236,7 @@ loc_1328e:
 		moveq	#0,d5
 		move.w	($FFFFFFA4).w,d0
 		andi.w	#$00FF,d0
-		lsr.w   #3,d0
+		lsr.w	#3,d0
 		subq.w	#2,d0
 		bpl.s   loc_132a4
 		addi.w	#$20,d0
@@ -6389,7 +6389,7 @@ loc_134bc:
 loc_134e2:
 		move.w	$3C(a0),d0
 		andi.w	#$7FFC,d0
-		jsr     loc_134f0(pc,d0.w)
+		jsr	loc_134f0(pc,d0.w)
 		rts
 
 ; ----------------------------------------------------------------------
@@ -6525,9 +6525,9 @@ loc_135E8_End:
 ; ======================================================================
 
 loc_139a2:
-		jsr     (loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
+		jsr	(loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
 		lea	Pal_Main,a5              ; Load the main palette's address into a5.
-		jsr     ($FFFFFBBA).w            ; Decode it and write it into the palette buffer.
+		jsr	($FFFFFBBA).w            ; Decode it and write it into the palette buffer.
 		move.w	($FFFFD890).w,d0
 		andi.w	#3,d0
 		move.b	loc_13a08(pc,d0.w),($FFFFD82D).w
@@ -6547,7 +6547,7 @@ loc_139a2:
 		move.w	#$44,($FFFFC000).w
 		bsr.w	loc_12e00
 		bsr.w	loc_12e2e
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ----------------------------------------------------------------------
 
@@ -6585,7 +6585,7 @@ loc_13a3c:
 		bsr.w	loc_11784
 		move.w	#$40,($FFFFFFC0).w
 loc_13a5a:
-		jmp     ($FFFFFB6C).w
+		jmp	($FFFFFB6C).w
 
 ; ======================================================================
 
@@ -6637,7 +6637,7 @@ loc_13ea0:
 		bne.s   loc_13eb6
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_13ede(pc,d0.w)
+		jsr	loc_13ede(pc,d0.w)
 loc_13eb6:
 		move.w	$3C(a0),d0
 		andi.w	#$7C,d0
@@ -7138,7 +7138,7 @@ loc_1438c:
 		bne.s   loc_143ae
 		move.l	a0,-(sp)
 		move.b	#$87,d0
-		jsr     ($FFFFFB66).w
+		jsr	($FFFFFB66).w
 		movea.l (sp)+,a0
 		clr.b   5(a0)
 		clr.l   $34(a0)
@@ -7197,7 +7197,7 @@ loc_14430:
 		moveq	#$3C,d2
 loc_1444E:
 		bsr.w	TimerCounter
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d2,loc_1444e
 		bra.s	loc_14462
 
@@ -7292,7 +7292,7 @@ loc_144dc:
 loc_14504:
 		move.w	$3C(a0),d0
 		andi.w	#$7FFC,d0
-		jsr     loc_14516(pc,d0.w)
+		jsr	loc_14516(pc,d0.w)
 		bsr.w	loc_1105c
 		rts
 		
@@ -7351,7 +7351,7 @@ loc_1455e:
 		bne.s   loc_1457a
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_1457c(pc,d0.w)
+		jsr	loc_1457c(pc,d0.w)
 loc_1457a:
 		rts
 
@@ -7740,7 +7740,7 @@ loc_14874:
 		bne.s   loc_14898
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_1489a(pc,d0.w)
+		jsr	loc_1489a(pc,d0.w)
 		move.l	$34(a0),d0
 		beq.s	loc_14898
 		move.b	#1,$39(a0)
@@ -7855,7 +7855,7 @@ loc_149ce:
 		move.l	a0,-(sp)
 		moveq	#2,d1
 loc_149D2:
-		jsr     ($FFFFFB6C).w
+		jsr	($FFFFFB6C).w
 		dbf	d1,loc_149d2
 		movea.l (sp)+,a0
 		clr.b   $38(a0)
@@ -8023,7 +8023,7 @@ loc_14b42:
 		moveq	#0,d0
 		move.w	a0,d0
 		subi.w	#$C480,d0
-		lsr.w   #4,d0
+		lsr.w	#4,d0
 		lea	loc_14c4a(pc),a1
 		move.l	(a1,d0.w),$34(a0)
 		tst.b	$39(a0)
@@ -8128,7 +8128,7 @@ loc_14c6a:
 		moveq	#0,d0
 		move.w	a0,d0
 		subi.w	#$C480,d0
-		lsr.w   #4,d0
+		lsr.w	#4,d0
 		lea	loc_14d32(pc),a1
 		move.l	(a1,d0.w),$34(a0)
 		tst.b	$39(a0)
@@ -8256,7 +8256,7 @@ loc_14dd4:
 		bne.s   loc_14df8
 		moveq	#0,d0
 		move.b	($FFFFD267).w,d0
-		lsr.w   #4,d0
+		lsr.w	#4,d0
 		lsl.w   #2,d0
 		move.l	loc_14dfa(pc,d0.w),d0
 		move.l	d0,($FFFFD268).w
@@ -8423,7 +8423,7 @@ loc_14efa:
 		bne.s   loc_14f2e
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_14f44(pc,d0.w)
+		jsr	loc_14f44(pc,d0.w)
 		move.w	$3C(a0),d0
 		andi.w	#$7FFC,d0
 		cmpi.w	#$14,d0
@@ -9442,7 +9442,7 @@ loc_15d8c:
 		bne.s   loc_15dc0
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_15dc2(pc,d0.w)
+		jsr	loc_15dc2(pc,d0.w)
 		move.w	$3C(a0),d0
 		andi.w	#$7C,d0
 		cmpi.w	#$C,d0
@@ -9488,7 +9488,7 @@ loc_15e12:
 		moveq	#0,d0
 		move.b	$3A(a0),d0
 		lsl.w   #2,d0
-		jsr     loc_15e20(pc,d0.w)
+		jsr	loc_15e20(pc,d0.w)
 		rts
 
 ; ----------------------------------------------------------------------
@@ -9982,7 +9982,7 @@ loc_1633E:
 		bne.s   loc_1635c
 		moveq	#$7C,d0		  ; Set routine counter variable as $7C.
 		and.w   $3C(a0),d0               ; And by routine to get values 0 or 4.
-		jsr     loc_1635e(pc,d0.w)       ; Jump to that routine.
+		jsr	loc_1635e(pc,d0.w)       ; Jump to that routine.
 loc_1635c:
 		rts		              ; Return.
 
@@ -10385,7 +10385,7 @@ loc_166E6:
 loc_166EC:
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
-		jsr     loc_166fc(pc,d0.w)
+		jsr	loc_166fc(pc,d0.w)
 		bsr.w	AnimateSprite
 		rts
 

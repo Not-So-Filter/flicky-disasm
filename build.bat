@@ -5,6 +5,6 @@ tools\p2bin -p=0 "Sound\Z80 Sound Driver.p" "Sound\Z80 Sound Driver.bin"
 del "Sound\Z80 Sound Driver.p"
 
 if exist flicky.bin move /Y flicky.bin flicky.prev.bin >NUL
-tools\asm68k /o op+ /o os+ /o ow+ /o oaq+ /o osq+ /o omq+ /p /o ae- flicky.asm, flicky.bin
+tools\asm68k /k /p /o ae- flicky.asm, flicky.bin >errors.txt, , flicky.lst
 tools\fixheader flicky.bin
 pause

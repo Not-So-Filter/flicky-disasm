@@ -1,5 +1,7 @@
 flicky.bin
 flicky.prev.bin
+flicky.lst
+errors.txt
 Sound/Z80 Sound Driver.bin
 Sound/Z80 Sound Driver.prev.bin
 Sound/Z80 Sound Driver.lst
