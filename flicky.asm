@@ -1,13 +1,17 @@
 ; ======================================================================
 ; Flicky Disassembly, by Dandaman955 (05/10/2015, 19:48.00 - 07/07/2016, 15:45.04)
-; If you have contributed to this disassembly, leave your name below.
+; If you have contributed to this disassembly, leave your name below (organized from A to Z).
 ;
 ;
 ;
 ; Thanks:
-; Nemesis      - Modded ASM68K.
+; Clownacy     - Fixed corrupting moveq instructions that write $80-$FF in asm68k.
+; Filter       - Continuation of the disassembly.
+; NaotoNTP     - Fixed improper assembly of the exg instruction in asm68k.
+; Nemesis      - Modded asm68k.
 ; LazloPsylus  - Bringing up the use of the 0 add before the bcd instructions.
 ; MarkeyJester - AlignFF macro.
+; ValleyBell   - Sound Driver disassembly.
 ;
 ; NOTES
 ; - The entire main block of code ($10000-$1C000) is written and run from
@@ -204,102 +208,102 @@ PortC_Ok:
 ; ======================================================================
 SetupValues:					; $294
 
-		dc.w	$8000			; d5 - Used for the VDP address register settings.
-		dc.w	$3FFF			; d6 - Used to clear all 64kb of RAM.
-		dc.w	$0100			; d7 - Used for setting the appropriate VDP register (increments).
+		dc.w $8000			; d5 - Used for the VDP address register settings.
+		dc.w $3FFF			; d6 - Used to clear all 64kb of RAM.
+		dc.w $100			; d7 - Used for setting the appropriate VDP register (increments).
 
-		dc.l	$A00000			; a0 - Start of Z80 RAM.
-		dc.l	$A11100			; a1 - Z80 bus request.
-		dc.l	$A11200			; a2 - Z80 reset.
-		dc.l	$C00000			; a3 - VDP data port.
-		dc.l	$C00004			; a4 - VDP control port.
+		dc.l $A00000			; a0 - Start of Z80 RAM.
+		dc.l $A11100			; a1 - Z80 bus request.
+		dc.l $A11200			; a2 - Z80 reset.
+		dc.l $C00000			; a3 - VDP data port.
+		dc.l $C00004			; a4 - VDP control port.
 ; ----------------------------------------------------------------------
 VDPInitRegisters:
-		dc.b	$04, $14, $30, $3C
-		dc.b	$07, $6C, $00, $00
-		dc.b	$00, $00, $FF, $00
-		dc.b	$81, $37, $00, $01
-		dc.b	$01, $00, $00, $FF
-		dc.b	$FF, $00, $00, $80
+		dc.b $04, $14, $30, $3C
+		dc.b $07, $6C, $00, $00
+		dc.b $00, $00, $FF, $00
+		dc.b $81, $37, $00, $01
+		dc.b $01, $00, $00, $FF
+		dc.b $FF, $00, $00, $80
 
-		dc.l	$40000080		; Start of VRAM, DMA.
+		dc.l $40000080			; Start of VRAM, DMA.
 
 Z80Init:
-		dc.b	$AF, $01, $D9, $1F	; Z80 init instructions.
-		dc.b	$11, $27, $00, $21
-		dc.b	$26, $00, $F9, $77
-		dc.b	$ED, $B0, $DD, $E1
-		dc.b	$FD, $E1, $ED, $47
-		dc.b	$ED, $4F, $D1, $E1
-		dc.b	$F1, $08, $D9, $C1
-		dc.b	$D1, $E1, $F1, $F9
-		dc.b	$F3, $ED, $56, $36
-		dc.b	$E9, $E9
+		dc.b $AF, $01, $D9, $1F		; Z80 init instructions.
+		dc.b $11, $27, $00, $21
+		dc.b $26, $00, $F9, $77
+		dc.b $ED, $B0, $DD, $E1
+		dc.b $FD, $E1, $ED, $47
+		dc.b $ED, $4F, $D1, $E1
+		dc.b $F1, $08, $D9, $C1
+		dc.b $D1, $E1, $F1, $F9
+		dc.b $F3, $ED, $56, $36
+		dc.b $E9, $E9
 Z80Init_End:
 
-		dc.w	$8104			; Disable display, DMA and VBlank.
-		dc.w	$8F02			; Sets VDP auto increment to $02.
+		dc.w $8104			; Disable display, DMA and VBlank.
+		dc.w $8F02			; Sets VDP auto increment to $02.
 
-		dc.l	$C0000000		; CRAM write address.
-		dc.l	$40000010		; VSRAM write address.
+		dc.l $C0000000			; CRAM write address.
+		dc.l $40000010			; VSRAM write address.
 
-		dc.b	$9F, $BF, $DF, $FF	; Mutes the PSG channels.
+		dc.b $9F, $BF, $DF, $FF		; Mutes the PSG channels.
 
 ; ======================================================================
 
 loc_300:
-		tst.w	($C00004).l              ; Clear the VDP write-pending flag.
+		tst.w	($C00004).l		; Clear the VDP write-pending flag.
 		move.w	#$2700,sr		; Disable interrupts.
-		move.b	($A10001).l,d0           ; Move version register value into d0.
-		andi.b	#$F,d0		   ; Get hardware version.
-		beq.s	loc_320		  ; If it's a pre-TMSS model, branch.
-		move.l	#'SEGA',($A14000).l      ; Satisfy the TMSS.
+		move.b	($A10001).l,d0		; Move version register value into d0.
+		andi.b	#$F,d0			; Get hardware version.
+		beq.s	loc_320			; If it's a pre-TMSS model, branch.
+		move.l	#'SEGA',($A14000).l	; Satisfy the TMSS.
 loc_320:
-		movea.l #ROMEndLoc,a0            ; Get the header entry that denotes the ending address of this ROM.
-		move.l	(a0),d1		  ; Move the ending address of this ROM to d1.
-		addq.l	#1,d1		    ; Add 1 to process the extra 1 (dbf ends on -1).
-		movea.l #ErrorTrap,a0            ; Start checking the bytes from ErrorTrap, onwards.
-		sub.l	a0,d1		    ; Get size of ROM to check.
-		asr.l	#1,d1		    ; Divide by 2.
-		move.w	d1,d2		    ; Copy to d2.
-		subq.w	#1,d2		    ; Subtract 1 for the dbf loop (code is ran once before the loop).
-		swap    d1		       ; Swap register halves (dbf loops can only be a word in size, so this is an artificial dbf longword implementation).
-		moveq	#0,d0		    ; Clear d0.
+		movea.l #ROMEndLoc,a0		; Get the header entry that denotes the ending address of this ROM.
+		move.l	(a0),d1			; Move the ending address of this ROM to d1.
+		addq.l	#1,d1			; Add 1 to process the extra 1 (dbf ends on -1).
+		movea.l #ErrorTrap,a0		; Start checking the bytes from ErrorTrap, onwards.
+		sub.l	a0,d1			; Get size of ROM to check.
+		asr.l	#1,d1			; Divide by 2.
+		move.w	d1,d2			; Copy to d2.
+		subq.w	#1,d2			; Subtract 1 for the dbf loop (code is ran once before the loop).
+		swap    d1			; Swap register halves (dbf loops can only be a word in size, so this is an artificial dbf longword implementation).
+		moveq	#0,d0			; Clear d0.
 loc_33c:
-		add.w	(a0)+,d0		 ; Start adding the opcode's bytes together, into d0.
-		dbf	d2,loc_33c               ; Repeat for the ROM's end address (lower word).
-		dbf	d1,loc_33c               ; Repeat for the ROM's end address (higher word).
+		add.w	(a0)+,d0		; Start adding the opcode's bytes together, into d0.
+		dbf	d2,loc_33c		; Repeat for the ROM's end address (lower word).
+		dbf	d1,loc_33c		; Repeat for the ROM's end address (higher word).
 		cmp.w	Checksum.w,d0		; Does it match the checksum's header value?
-		beq.s	loc_350		  ; If it does, carry on with the game.
-		bra.w	loc_3e4		  ; Otherwise, trap in an endless loop.
+		beq.s	loc_350			; If it does, carry on with the game.
+		bra.w	loc_3e4			; Otherwise, trap in an endless loop.
 loc_350:
-		btst	#6,($A1000D).l           ; TODO
-		bne.s   loc_3aa		  ; If it has, branch.
+		btst	#6,($A1000D).l		; TODO
+		bne.s	loc_3aa			; If it has, branch.
 		move.w	#$2700,sr		; Disable interrupts.
-		lea	($A10003).l,a0           ; Load the first data port into a0.
-		bsr.w	loc_43a		  ; TODO IMPORTANT
-		cmpi.b	#0,d0		    ; Has the TODO bit been sent low?
-		beq.s	loc_374		  ; If it has, branch.
-		nop		              ; Give the port some time...
-		nop		              ; ...
-		nop		              ; ...
+		lea	($A10003).l,a0		; Load the first data port into a0.
+		bsr.w	loc_43a			; TODO IMPORTANT
+		cmpi.b	#0,d0			; Has the TODO bit been sent low?
+		beq.s	loc_374			; If it has, branch.
+		nop				; Give the port some time
+		nop
+		nop
 loc_374:
-		moveq	#$40,d0		  ; Set /TH as an output.
-		move.b	d0,($A10009).l           ; Init port 1.
-		move.b	d0,($A1000B).l           ; Init port 2.
-		move.b	d0,($A1000D).l           ; Init port 3.
+		moveq	#$40,d0			; Set /TH as an output.
+		move.b	d0,($A10009).l		; Init port 1.
+		move.b	d0,($A1000B).l		; Init port 2.
+		move.b	d0,($A1000D).l		; Init port 3.
 loc_388:
-		lea	($FF0000).l,a6           ; Load the start of RAM.
-		moveq	#0,d7		    ; Clear d7.
+		lea	($FF0000).l,a6		; Load the start of RAM.
+		moveq	#0,d7			; Clear d7.
 		move.w	#$3FFF,d6		; Set to clear $10000 bytes of RAM.
 loc_394:
-		move.l	d7,(a6)+		 ; Clear 4 bytes.
-		dbf	d6,loc_394               ; Repeat until fully cleared.
-		move.l	#'init',($FFFFFFFC).w    ; Set the checksum flag.
-		move.l	#$00100000,($FFFFCC00).w ; Set the top score as 100000.
+		move.l	d7,(a6)+		; Clear 4 bytes.
+		dbf	d6,loc_394		; Repeat until fully cleared.
+		move.l	#'init',($FFFFFFFC).w	; Set the checksum flag.
+		move.l	#$100000,($FFFFCC00).w	; Set the top score as 100000.
 loc_3aa:
 		cmpi.l	#'init',($FFFFFFFC).w    ; Has the checksum been ran?
-		bne.s   loc_388		  ; If not, branch.
+		bne.s	loc_388		  ; If not, branch.
 		bsr.w	InitRAMJMPTable          ; Write address pointers into RAM.
 		bsr.w	SetupVDPRegs             ; Write VDP setup array into RAM.
 		bsr.w	WriteVDPRegs             ; Write stored VDP setup array values into the VDP.
@@ -359,7 +363,7 @@ loc_44A:
 		or.b    d1,d0
 loc_458:
 		lsr.b   #1,d1
-		bne.s   loc_44a
+		bne.s	loc_44a
 		clr.b   6(a0)		    ; Clear set input/output value.
 		movem.l (sp)+,d1-d2/a1           ; Restore register values.
 		rts		              ; Return.
@@ -390,7 +394,7 @@ loc_480:
 		subq.w	#1,d1		    ; Subtract 1 from the frame counter.
 		move.w	d1,d0		    ; Copy value into d0.
 		andi.w	#3,d0		    ; Delay for 3 frames (?). TODO
-		bne.s   loc_480		  ; If 3 frames haven't passed, loop.
+		bne.s	loc_480		  ; If 3 frames haven't passed, loop.
 		cmpi.w	#$0028,d2		; Have all the colours been cycled through?
 		bgt.s   loc_4b2		  ; If they have, finish.
 		move.w	d2,d3		    ; Copy cycling palette counter into d3.
@@ -419,9 +423,9 @@ Palcycle_Sega:				   ; $4B4
 
 loc_4dc:				         ; $4DC
 		btst	#7,($FFFFFF8F).w         ; Is start being pressed?
-		bne.s   loc_4ec		  ; If it is, branch.
+		bne.s	loc_4ec		  ; If it is, branch.
 		cmpi.w	#$78,($FFFFFF92).w       ; Has the game mode timer hit $78?
-		bcs.s   loc_4f2		  ; If it hasn't, branch.
+		bcs.s	loc_4f2		  ; If it hasn't, branch.
 loc_4ec:
 		move.w	#0,($FFFFFFC0).w         ; Load the title screen.
 loc_4f2:
@@ -529,7 +533,7 @@ loc_8FE:
 		moveq	#0,d1		    ; Clear d1.
 loc_900:
 		cmpi.w	#$400,d0		 ; Is the DMA length larger than $400?
-		bhi.s   loc_8e0		  ; If it is, branch.
+		bhi.s	loc_8e0		  ; If it is, branch.
 loc_906:
 		lea	($C00004).l,a6           ; Load the VDP control port into a6.
 		subq.w	#1,d0		    ; Subtract 1 from DMA length so that it doesn't over-shoot.
@@ -575,7 +579,7 @@ loc_954:
 ; Unused DMA copy routine.
 loc_976:
 		cmpi.w	#$200,d0
-		bhi.s   loc_954
+		bhi.s	loc_954
 loc_97c:
 		lea	($C00004).l,a6
 		swap    d1
@@ -613,7 +617,7 @@ loc_97c:
 WaitforDMAFinish:				; $9D8
 		move.w	(a6),d0		  ; Move the VDP status register value into d0.
 		andi.w	#2,d0		    ; Is DMA fill/copy still running?
-		bne.s   WaitforDMAFinish         ; If it is, branch.
+		bne.s	WaitforDMAFinish         ; If it is, branch.
 		rts		              ; Return.
 
 ; ======================================================================
@@ -638,7 +642,7 @@ loc_a04:
 
 loc_A0C:
 		cmpi.w	#$400,d0
-		bhi.s   loc_9e2
+		bhi.s	loc_9e2
 loc_a12:
 		bsr.s	loc_a1a
 		ori.w   #$4000,d0		; Set the address as VRAM read.
@@ -749,7 +753,7 @@ NemDec_Main:				     ; $AF0
 		lea	($FFFFE630).w,a1         ; Set RAM address to decompress to.
 		move.w	(a0)+,d2		 ; Move the header into d2.
 		lsl.w   #1,d2		    ; Is the value signed?
-		bcc.s   loc_afe		  ; If it isn't, set the normal decompression mode.
+		bcc.s	loc_afe		  ; If it isn't, set the normal decompression mode.
 		adda.w	#loc_B64-loc_B5A,a3      ; If it is, set the XOR decompression mode.
 loc_afe:
 		lsl.w   #2,d2
@@ -763,7 +767,7 @@ loc_B10:
 		moveq	#8,d0
 		bsr.w	loc_c16
 		cmpi.w	#$FC,d1
-		bcc.s   loc_b4c
+		bcc.s	loc_b4c
 		add.w	d1,d1
 		move.b	(a1,d1.w),d0
 		ext.w   d0
@@ -778,7 +782,7 @@ loc_B38:
 		lsl.l   #4,d4
 		or.b    d1,d4
 		subq.w	#1,d3
-		bne.s   loc_b46
+		bne.s	loc_b46
 		jmp	(a3)		     ; TODO
 
 ; ======================================================================
@@ -803,7 +807,7 @@ loc_b5a:
 		move.l	d4,(a4)
 		subq.w	#1,a5
 		move.w	a5,d4
-		bne.s   loc_b42
+		bne.s	loc_b42
 		bra.s	loc_b84
 
 
@@ -814,7 +818,7 @@ loc_b64:
 		move.l	d2,(a4)
 		subq.w	#1,a5
 		move.w	a5,d4
-		bne.s   loc_b42
+		bne.s	loc_b42
 		bra.s	loc_b84
 
 ; ======================================================================
@@ -823,7 +827,7 @@ loc_b70:
 		move.l	d4,(a4)+
 		subq.w	#1,a5
 		move.w	a5,d4
-		bne.s   loc_b42
+		bne.s	loc_b42
 		bra.s	loc_b84
 
 
@@ -834,7 +838,7 @@ loc_b7a:
 		move.l	d2,(a4)+
 		subq.w	#1,a5
 		move.w	a5,d4
-		bne.s   loc_b42
+		bne.s	loc_b42
 
 ; ======================================================================
 
@@ -848,7 +852,7 @@ loc_b8a:
 		move.b	(a0)+,d0		 ; Move the compressed byte into d0.
 loc_B8C:
 		cmpi.b	#-1,d0		   ; Is the section set to end? TODO
-		bne.s   loc_b94		  ; If it isn't, branch.
+		bne.s	loc_b94		  ; If it isn't, branch.
 		rts		              ; Return.
 
 loc_b94:
@@ -856,7 +860,7 @@ loc_b94:
 loc_B96:
 		move.b	(a0)+,d0		 ;
 		cmpi.b	#$80,d0		  ;
-		bcc.s   loc_b8c		  ;
+		bcc.s	loc_b8c		  ;
 		move.b	d0,d1		    ;
 		andi.w	#$F,d7		   ; Get the palette entry nybble.
 		andi.w	#$70,d1		  ;
@@ -867,7 +871,7 @@ loc_B96:
 		or.w    d1,d7
 		moveq	#8,d1
 		sub.w	d0,d1
-		bne.s   loc_bc4
+		bne.s	loc_bc4
 		move.b	(a0)+,d0
 		add.w	d0,d0
 		move.w	d7,(a1,d0.w)
@@ -896,8 +900,8 @@ loc_bdc:
 		add.w	d1,d5
 		move.w	d6,d0
 		subq.w	#8,d0
-		bcs.s   loc_bfe
-		bne.s   loc_bf6
+		bcs.s	loc_bfe
+		bne.s	loc_bf6
 		clr.w   d6
 		move.b	d5,(a0)+
 		rts
@@ -949,7 +953,7 @@ loc_c26:
 loc_c2a:
 		sub.w	d0,d6
 		cmpi.w	#9,d6
-		bcc.s   loc_c38
+		bcc.s	loc_c38
 		addq.w	#8,d6
 		asl.w   #8,d5
 		move.b	(a0)+,d5
@@ -969,14 +973,14 @@ loc_c3a:
 loc_c5a:
 		move.w	a3,d3
 		swap    d4
-		bpl.s   loc_c6a
+		bpl.s	loc_c6a
 		subq.w	#1,d6
 		btst	d6,d5
 		beq.s	loc_c6a
 		ori.w   #$1000,d3
 loc_c6a:
 		swap    d4
-		bpl.s   loc_c78
+		bpl.s	loc_c78
 		subq.w	#1,d6
 		btst	d6,d5
 		beq.s	loc_c78
@@ -985,7 +989,7 @@ loc_c78:
 		move.w	d5,d1
 		move.w	d6,d7
 		sub.w	a5,d7
-		bcc.s   loc_ca8
+		bcc.s	loc_ca8
 		move.w	d7,d6
 		addi.w	#$10,d6
 		neg.w   d7
@@ -1097,7 +1101,7 @@ loc_D28:
 		move.w	d1,d2
 		moveq	#7,d0
 		cmpi.w	#$40,d1
-		bcc.s   loc_D3c
+		bcc.s	loc_D3c
 		moveq	#6,d0
 		lsr.w	#1,d2
 loc_D3c:
@@ -1176,12 +1180,12 @@ loc_D98:
 loc_Da8:
 		subq.w	#1,a0
 		cmpi.w	#$10,d6
-		bne.s   loc_Db2
+		bne.s	loc_Db2
 		subq.w	#1,a0
 loc_Db2:
 		move.w	a0,d0
 		lsr.w	#1,d0
-		bcc.s   loc_Dba
+		bcc.s	loc_Dba
 		addq.w	#1,a0
 loc_Dba:
 		movem.l (sp)+,d0-d7/a1-a5
@@ -1301,7 +1305,7 @@ loc_E90:
 		move.w	d0,(a6)		  ; Write to the VDP.
 		addi.w	#$100,d7		 ; Load increment value for next register.
 		cmpi.w	#$9300,d7		; Has it hit the final register?
-		bcs.s   loc_E90		  ; If it hasn't, branch.
+		bcs.s	loc_E90		  ; If it hasn't, branch.
 		rts		              ; Return.
 
 ; ======================================================================
@@ -1391,7 +1395,7 @@ WaitforVBlank:				   ; $F3C
 		move.w	($FFFFFF98).w,($FFFFFF96).w ; Mirror VBlank routine value.
 loc_F42:
 		tst.w	($FFFFFF96).w            ; Has VBlank ran?
-		bne.s   loc_F42		  ; If not, loop.
+		bne.s	loc_F42		  ; If not, loop.
 		rts		              ; Return.
 
 ; ======================================================================
@@ -1399,7 +1403,7 @@ loc_F42:
 
 RandomNumber:				    ; $F4A
 		move.l	($FFFFFFCA).w,d1         ; Move the current random number into d1.
-		bne.s   loc_F56		  ; If it already has a number, branch.
+		bne.s	loc_F56		  ; If it already has a number, branch.
 		move.l	#$2A6D365A,d1            ; Generate a random seed.
 loc_F56:
 		move.l	d1,d0		    ; Below instructions randomise the number, no reason to comment, really...
@@ -1421,11 +1425,11 @@ loc_F70:
 		movem.l d2-d5,-(sp)              ; Store used registers onto the stack.
 		moveq	#$40,d0
 		cmp.w   d0,d2
-		bcs.s   loc_F92		  ; If it is lower, branch.
+		bcs.s	loc_F92		  ; If it is lower, branch.
 		tst.w	d3
 		beq.s	loc_F82
 		cmp.w   d2,d3
-		bcs.s   loc_F86
+		bcs.s	loc_F86
 loc_F82:
 		move.w	d0,d2
 		bra.s	loc_F92
@@ -1435,13 +1439,13 @@ loc_F86:
 		neg.w   d2
 		add.w	d0,d2
 		cmp.w   d2,d0
-		bcc.s   loc_F92
+		bcc.s	loc_F92
 		moveq	#0,d2
 loc_F92:
 		lea	($FFFFF7E0).w,a0         ; Load the palette buffer into a0.
 		lea	($FFFFF860).w,a1         ; Load the target palette RAM space into a1.
 		cmpi.w	#$40,d2
-		bne.s   loc_Faa
+		bne.s	loc_Faa
 		moveq	#$1F,d4
 loc_FA2:
 		move.l	(a1)+,(a0)+
@@ -1483,7 +1487,7 @@ loc_Fd6:
 loc_Fec:
 		roxl.l	#1,d1
 		roxl.l	#1,d0
-		bcc.s   loc_Ff6
+		bcc.s	loc_Ff6
 		move.w	(a0)+,(a1)+
 		bra.s	loc_Ffa
 
@@ -1599,11 +1603,11 @@ loc_10C4:
 		addq.w	#1,a1		    ; Increment Z80 RAM address.
 		dbf	d0,loc_10b4              ; Repeat for the rest.
 		lsr.w	#1,d2		    ; Shift right.
-		bcc.s   loc_10d0		 ; If the bit didn't contain a '1', skip the Z80 reset.
+		bcc.s	loc_10d0		 ; If the bit didn't contain a '1', skip the Z80 reset.
 		bsr.s	ResettheZ80              ; Otherwise, reset the Z80.
 loc_10d0:
 		lsr.w	#1,d2		    ; Shift right again.
-		bcs.s   loc_10d6		 ; If the bit was set, skip the Z80 start.
+		bcs.s	loc_10d6		 ; If the bit was set, skip the Z80 start.
 loc_10d4:
 		bsr.s	loc_1084		 ; Start the Z80.
 loc_10d6:
@@ -1632,7 +1636,7 @@ loc_10dc:				        ; TODO
 loc_1100:
 		movea.w ($FFFFFFA2).w,a0
 		cmpa.w	#8,a0
-		bcc.s   loc_1112
+		bcc.s	loc_1112
 		move.b	d0,-$66(a0)
 		addq.w	#1,($FFFFFFA2).w
 loc_1112:
@@ -1648,19 +1652,19 @@ loc_1114:
 		subq.w	#1,($FFFFFFA2).w
 		bsr.w	StoptheZ80               ; Stop the Z80.
 		tst.b	($A01C0A).l
-		bne.s   loc_1138
+		bne.s	loc_1138
 		move.b	d0,($A01C0A).l
 		bra.s	loc_1156
 
 loc_1138:
 		tst.b	($A01C0B).l
-		bne.s   loc_1148
+		bne.s	loc_1148
 		move.b	d0,($A01C0B).l
 		bra.s	loc_1156
 
 loc_1148:
 		tst.b	($A01C0C).l
-		bne.s   loc_1156
+		bne.s	loc_1156
 		move.b	d0,($A01C0C).l
 loc_1156:
 		bsr.w	loc_1084		 ; Start the Z80.
@@ -1739,7 +1743,7 @@ loc_119E:
 		andi.w	#$0EEE,d1		; Ensure that white is the highest value attainable.
 		move.w	d1,(a0,d0.w)             ; Load to the appropriate position in the palette buffer.
 		lsr.w	#1,d2		    ; Shift right to check for the presence of the T bit.
-		bcc.s   loc_119E		 ; If it's not there, continue decoding palettes.
+		bcc.s	loc_119E		 ; If it's not there, continue decoding palettes.
 		movem.l (sp)+,d0-d2/a0           ; Restore register values.
 		rts		              ; Return.
 
@@ -1777,7 +1781,7 @@ loc_1218:
 		add.w	d0,d3
 		bsr.w	loc_A76
 		addi.b	#$11,d4
-		bcc.s   loc_1218
+		bcc.s	loc_1218
 		rts
 
 ; ======================================================================
@@ -2198,7 +2202,7 @@ loc_10d34:
 
 loc_10d48:
 		tst.b	($FFFFD2A4).w
-		bne.s   loc_10d50
+		bne.s	loc_10d50
 		bsr.s	loc_10d34
 loc_10d50:
 		rts
@@ -2210,7 +2214,7 @@ loc_10d52:
 		beq.s	loc_10d6c
 		addq.w	#1,($FFFFD2A2).w
 		cmpi.w	#$1E,($FFFFD2A2).w
-		bcs.s   loc_10d6c
+		bcs.s	loc_10d6c
 		clr.w   ($FFFFD2A2).w
 		clr.b   ($FFFFD2A4).w
 loc_10d6c:
@@ -2265,7 +2269,7 @@ loc_10db6:
 		addq.w	#1,d1
 		adda.w  d1,a1
 		cmp.w   d1,d0
-		bhi.s   loc_10d90
+		bhi.s	loc_10d90
 		rts
 
 loc_10dc2:
@@ -2298,9 +2302,9 @@ loc_10de8:
 		movem.l d0-d1,-(sp)              ; Store used registers onto the stack.
 		clr.w   d5
 		subi.w	#$20,d4
-		bcc.s   loc_10e08
+		bcc.s	loc_10e08
 		cmpi.w	#$FFF3,d4
-		bne.s   loc_10e02
+		bne.s	loc_10e02
 		move.w	#$79,d4
 		moveq	#1,d5
 		bra.s	loc_10e3c
@@ -2312,22 +2316,22 @@ loc_10e02:
 loc_10e08:
 		moveq	#$40,d0
 		cmp.w   d0,d4
-		bcs.s   loc_10e3c
+		bcs.s	loc_10e3c
 		sub.w	d0,d4
 		moveq	#$40,d1
 		moveq	#$50,d0
 		cmp.w   d0,d4
-		bcs.s   loc_10e1c
+		bcs.s	loc_10e1c
 		sub.w	d0,d4
 		moveq	#$77,d1
 loc_10e1c:
 		cmpi.w	#$37,d4
-		bcs.s   loc_10e3a
+		bcs.s	loc_10e3a
 		moveq	#1,d5
 		cmpi.w	#$46,d4
-		bcs.s   loc_10e36
+		bcs.s	loc_10e36
 		cmpi.w	#$4B,d4
-		bcc.s   loc_10e34
+		bcc.s	loc_10e34
 		addq.w	#5,d4
 		bra.s	loc_10e36
 
@@ -2362,7 +2366,7 @@ loc_10e58				        ; Subroutine seems to start here.
 		addq.w	#1,($FFFFE634).w
 		move.w	($FFFFE632).w,d7
 		subq.w	#1,d7
-		bcs.s   loc_10e82
+		bcs.s	loc_10e82
 loc_10e6c:
 		bsr.s	loc_10e52
 		andi.l	#$0000FFFF,d1
@@ -2414,10 +2418,10 @@ loc_10eba:
 		lea	($FFFFF860).w,a1         ; Load target palette space into a1.
 loc_10EDC:
 		cmpm.l	(a0)+,(a1)+              ; Does the value match?
-		bne.s   loc_10EEE		; If they don't, branch.
+		bne.s	loc_10EEE		; If they don't, branch.
 		dbf	d7,loc_10edc             ; Repeat to check the rest.
 		bclr    #0,($FFFFD00C).w         ; Set palette fading as inactive.
-		bne.s   loc_10ef4		; If it was running before, branch.
+		bne.s	loc_10ef4		; If it was running before, branch.
 		bra.s	loc_10F14		; Skip updating palettes.
 loc_10EEE:
 		move.b	#1,($FFFFD00C).w         ; Set palette fading as active.
@@ -2512,7 +2516,7 @@ loc_10F86:
 ; ======================================================================
 loc_10F94:				    ; TODO
 		cmpi.w	#-1,($FFFFD884).w
-		bne.s   loc_10FA2
+		bne.s	loc_10FA2
 		move.w	#$8020,d4
 		bra.s	loc_10FA6
 
@@ -2587,7 +2591,7 @@ loc_10FFA:
 		movem.l (sp)+,d0-d1/d5           ; Restore register values.
 		dbf	d0,loc_10Ffa             ; Repeat for the 3 other bytes.
 		tst.b	($FFFFD00D).w            ; Have there been any numbers written to the screen?
-		bne.s   loc_11034		; If there has, branch.
+		bne.s	loc_11034		; If there has, branch.
 		moveq	#$30,d4		  ; Set to write a 0.
 		bsr.w	loc_10F94		; Write it.
 loc_11034:
@@ -2597,9 +2601,9 @@ loc_11034:
 
 loc_11036:
 		tst.b	d4		       ; Is the byte value 00?
-		bne.s   loc_1104c		; If it isn't, branch.
+		bne.s	loc_1104c		; If it isn't, branch.
 		tst.b	($FFFFD00D).w            ; Has there been a number written?
-		bne.s   loc_11052		; If there has, branch.
+		bne.s	loc_11052		; If there has, branch.
 		tst.b	($FFFFD29A).w            ; Is this the level select?
 		beq.s	loc_1104a		; If it isn't, branch.
 		bsr.w	loc_10F94		; TODO do this later.
@@ -2617,7 +2621,7 @@ loc_11052:
 
 loc_1105c:
 		btst	#0,2(a0)
-		bne.s   loc_110b8
+		bne.s	loc_110b8
 		move.l	$34(a0),d1
 		move.l	$30(a0),d2
 		add.l	d1,d2
@@ -2712,14 +2716,14 @@ AnimateSprite:				   ; $11126
 		movea.l 8(a0),a1		 ; Load the animation table.
 		movea.l (a1,d0.w),a1             ; Load the address of the animation script.
 		subq.b	#1,$11(a0)               ; Subtract 1 from the animation frame duration.
-		bpl.s   loc_11142		; If there's still time left on the counter, branch.
+		bpl.s	loc_11142		; If there's still time left on the counter, branch.
 		move.b	1(a1),$11(a0)            ; Refresh frame counter.
 		addq.b	#1,$10(a0)               ; Get next animation.
 loc_11142:
 		moveq	#0,d0		    ; Clear d0.
 		move.b	$10(a0),d0               ; Move current animation frame into d0.
 		cmp.b   (a1),d0		  ; Has it hit the last animation?
-		bcs.s   loc_11158		; If it hasn't, branch.
+		bcs.s	loc_11158		; If it hasn't, branch.
 		clr.b   $10(a0)		  ; Reset animation.
 		moveq	#0,d0		    ; Clear d0.
 		bset    #2,2(a0)		 ; Set the animation as 'reset'.
@@ -2745,7 +2749,7 @@ BuildSprites_Main:		             ; $11170
 		move.b	(a1)+,4(a0)
 		move.w	$24(a0),d2             ; Move the object's vertical position into d2.
 		cmpi.w	#$180,d2               ; Is it higher than $180?
-		bhi.s   loc_111d2              ; If it is, don't draw the sprite.
+		bhi.s	loc_111d2              ; If it is, don't draw the sprite.
 		move.w	$20(a0),d3             ; Move the object's horizontal position into d3.
 loc_1118A:
 		move.b	(a1)+,d0               ; Move the sprite's relative Y axis displacement into d0.
@@ -2760,7 +2764,7 @@ loc_1118A:
 		move.b	(a1)+,(a2)+            ; Write the pattern bits to the sprite table.
 		move.b	(a1)+,d0               ; Load the relative X axis position into d0.
 		tst.b	2(a0)		  ; Is the MSB of the object status bit set? TODO name?
-		bpl.s   loc_111b0              ; If it isn't, branch.
+		bpl.s	loc_111b0              ; If it isn't, branch.
 		bchg    #3,-2(a2)              ; Flip the sprite horizontally.
 		move.b	(a1),d0		; Load the flipped relative x axis position into d0.
 loc_111b0:
@@ -2770,7 +2774,7 @@ loc_111b0:
 		move.w	d0,d4		  ; Copy to d4.
 		subi.w	#$41,d4		; Subtract 65 pixels.
 		cmpi.w	#$17F,d4               ; Is it lower than 383 pixels?
-		bcs.s   loc_111ca              ; If it's less, branch.
+		bcs.s	loc_111ca              ; If it's less, branch.
 		subq.w	#6,a2
 		dbf	d1,loc_1118a           ; Repeat for the rest of the sprites.
 		rts
@@ -2794,7 +2798,7 @@ loc_111d4:
 						 ; TODO
 CheckObjectRAM:				  ; $111E2
 		tst.b	($FFFFD24E).w            ; Is this mode the bonus stage?
-		bne.s   CheckObjectRAM_BonusStage; If it is, branch.
+		bne.s	CheckObjectRAM_BonusStage; If it is, branch.
 		lea	($FFFFC440).w,a0         ;
 		bsr.w	LoadObjects              ;
 		lea	($FFFFC200).w,a0         ;
@@ -2945,14 +2949,14 @@ loc_1135e:
 ; ======================================================================
 SignFrameLogic:				  ; $1137A
 		subq.b	#1,1(a0)		 ; Subtract 1 from the sign counter.
-		bpl.s   loc_1138a		; If it hasn't gone under 0, branch.
+		bpl.s	loc_1138a		; If it hasn't gone under 0, branch.
 		move.b	1(a1),1(a0)              ; Otherwise, refresh the counter.
 		addq.b	#1,0(a0)		 ; Load next sign frame.       bookmark $1137E
 loc_1138A:
 		moveq	#0,d0		    ; Clear d0.
 		move.b	0(a0),d0		 ; Load the current frame into d0.
 		cmp.b   (a1),d0		  ; Has it hit the last sign frame?
-		bcs.s   loc_113a0		; If it hasn't, branch.
+		bcs.s	loc_113a0		; If it hasn't, branch.
 		clr.b   0(a0)		    ; Reset sign frame back to 0.
 		moveq	#0,d0		    ; Clear d0.
 		move.b	#1,2(a0)		 ; Set TODO flag to 1.
@@ -3002,7 +3006,7 @@ loc_113ea:
 		move.b	(a6)+,d7
 		beq.s	loc_113fa
 		bclr    #7,d7
-		bne.s   loc_113fc
+		bne.s	loc_113fc
 		adda.l  d7,a0
 		bra.s	loc_113ea
 loc_113fa:
@@ -3010,7 +3014,7 @@ loc_113fa:
 
 loc_113fc:
 		bclr    #6,d7
-		bne.s   loc_1140e
+		bne.s	loc_1140e
 		subq.b	#1,d7
 loc_11404:
 		move.b	#1,(a0)+
@@ -3298,7 +3302,7 @@ loc_11674:
 
 loc_1168a:
 		tst.b	($FFFFD2A5).w
-		bne.s   loc_116bc
+		bne.s	loc_116bc
 		lea	($FFFFD266).w,a2
 		lea	($FFFFD882).w,a1
 		moveq	#3,d0
@@ -3329,14 +3333,14 @@ TimerCounter:				    ; $116BE
 		abcd    d1,d0		    ; Add by a centisecond.
 		move.b	d0,($FFFFD88A).w         ; Update centisecond timer.
 		cmpi.b	#$60,d0		  ; Has it hit 60 or over?
-		bcs.s   loc_116fe		; If it hasn't yet, branch.
+		bcs.s	loc_116fe		; If it hasn't yet, branch.
 		clr.b   ($FFFFD88A).w            ; Set the centisecond time to 0.
 		move.b	($FFFFD889).w,d0         ; Load the second timer value to d0.
 		addi.b	#0,d0		    ; Clear the extend ccr bit.
 		abcd    d1,d0		    ; Increment by a second.
 		move.b	d0,($FFFFD889).w         ; Update second timer.
 		cmpi.b	#$60,d0		  ; Has it hit 60 seconds?
-		bcs.s   loc_116fe		; If it hasn't, branch.
+		bcs.s	loc_116fe		; If it hasn't, branch.
 		clr.b   ($FFFFD889).w            ; Clear centisecond timer.
 		move.b	($FFFFD888).w,d0         ; Load the minute/second segment of the timer.
 		addi.b	#0,d0		    ; Clear the extend bit.
@@ -3404,7 +3408,7 @@ loc_11764:
 		move.b	($FFFFD82D).w,d0         ; Load the level number into d0.
 loc_1176A:
 		cmp.b   d7,d0		    ; Is the level number lower than 24 ($18)?
-		bcs.s   loc_11772		; If it is, branch.
+		bcs.s	loc_11772		; If it is, branch.
 		sub.b	d7,d0		    ; Subtract the level number by 24.
 		bra.s	loc_1176a		; Start again.
 loc_11772:
@@ -3764,7 +3768,7 @@ loc_11a00:
 		moveq	#$1F,d0
 loc_11A18:
 		tst.b	(a0)+
-		bne.s   loc_11a2c
+		bne.s	loc_11a2c
 		move.w	#3,d4
 		movem.l d5/a0,-(sp)
 		bsr.w	loc_1193c
@@ -4159,7 +4163,7 @@ loc_11D5E:
 		movem.l d5-a4,-(sp)
 		bsr.w	SignFrameLogic
 		tst.b	2(a0)
-		bne.s   loc_11d7e
+		bne.s	loc_11d7e
 		bsr.w	CheckObjectRAM
 		bsr.w	TimerCounter             ; Update timer.
 		jsr	($FFFFFB6C).w
@@ -4278,7 +4282,7 @@ loc_11e68:
 		moveq	#0,d0		    ; Set to draw 1 number.
 		bsr.w	loc_10Ff4		; Draw it onto the screen.
 		tst.b	($FFFFD266).w            ; Has a minute elapsed?
-		bne.s   loc_11e94		; If not, branch.
+		bne.s	loc_11e94		; If not, branch.
 		lea	($FFFFD268).w,a6         ; Load the bonus score RAM address into a6.
 		moveq	#0,d5		    ; Clear d5.
 		move.w	#$C260,d5		; Set the VRAM address to write to.
@@ -4314,7 +4318,7 @@ loc_11ed4:
 loc_11EE6:
 		bsr.w	WriteASCIIString         ; Write to the screen.
 		tst.b	($FFFFD266).w            ; Has a minute elapsed?
-		bne.s   loc_11EFA		; If it has, branch.
+		bne.s	loc_11EFA		; If it has, branch.
 		lea	loc_11F2C(pc),a6         ; Load the 'PTS.' mappings.
 		bsr.w	WriteASCIIString         ; Write to the screen.
 		bra.s	loc_11F02		; Skip loading 'NO BONUS'.
@@ -4395,7 +4399,7 @@ loc_11F6C:
 		moveq	#1,d0		    ; Set to load 2 bytes worth.
 		bsr.w	loc_10Ff4		; Write onto the screen.
 		cmpi.b	#$14,($FFFFD28E).w       ; Have you collected all 20 chicks?
-		bne.s   loc_11faa		; If you haven't, skip the perfect bonus stuff.
+		bne.s	loc_11faa		; If you haven't, skip the perfect bonus stuff.
 		lea	loc_11fac(pc),a6         ; Load the perfect bonus value.
 		moveq	#0,d5		    ; Clear d5.
 		move.w	#$C390,d5		; Load the position on Plane A to write to.
@@ -4563,7 +4567,7 @@ TitleScreen_Loop:				; $12122
 		move.w	#8,($FFFFFFC0).w         ; Load the next gamemode TODO.
 loc_12146:
 		cmpi.w	#$400,($FFFFFF92).w      ; Has the gamemode timer hit $400?
-		bcs.s   loc_1216a		; If it's any lower, branch.
+		bcs.s	loc_1216a		; If it's any lower, branch.
 		bsr.w	loc_11784		; TODO IMPORTANT
 		move.b	#$E0,d0
 		bsr.w	loc_10d34		; TODO again. Hopefully the sound driver.
@@ -4579,7 +4583,7 @@ loc_1216a:
 ; ======================================================================
 loc_12172:
 		bset    #7,(a0)		  ; Set object as loaded.
-		bne.s   loc_1219e		; If it was loaded before, skip object loading.
+		bne.s	loc_1219e		; If it was loaded before, skip object loading.
 		bset    #7,2(a0)		 ; Flip sprite horizontally (face left).
 		move.w	$38(a0),d0               ; Load the object's subtype to d0.
 		lsl.w   #1,d0		    ; Multiply by 2 to handle word-sized tables.
@@ -4625,7 +4629,7 @@ loc_121bc:
 ; ======================================================================
 loc_121cc:
 		bset    #7,(a0)		  ; Set object as loaded.
-		bne.s   loc_121e6		; If it wasn't before, branch.
+		bne.s	loc_121e6		; If it wasn't before, branch.
 		move.l	#loc_1ACDC,$C(a0)        ; TODO mappings?
 		move.w	#$F0,$20(a0)             ; Set starting horizontal height.
 		move.w	#$120,$24(a0)            ; Set starting vertical height.
@@ -4648,12 +4652,12 @@ loc_121f4:
 
 loc_121fc:
 		bset    #7,$3C(a0)               ; Set routine counter so this routine isn't run again.
-		bne.s   loc_12210		; If it was already set, branch.
+		bne.s	loc_12210		; If it was already set, branch.
 		bclr    #1,2(a0)		 ; Enable sprite display.
 		move.w	#$3C,$3A(a0)             ; Set routine counter timer.
 loc_12210:
 		subq.w	#1,$3A(a0)               ; Subtract 1 from the timer.
-		bne.s   loc_1221c		; If it hasn't finished, skip over the next routine load.
+		bne.s	loc_1221c		; If it hasn't finished, skip over the next routine load.
 		move.w	#4,$3C(a0)               ; Set to load next routine on next pass.
 loc_1221c:
 		rts		              ; Return.
@@ -4662,12 +4666,12 @@ loc_1221c:
 
 loc_1221E:
 		bset    #7,$3C(a0)               ; Set routine counter so this routine isn't run again.
-		bne.s   loc_12232		; If it was already set, branch.
+		bne.s	loc_12232		; If it was already set, branch.
 		bset    #1,2(a0)		 ; Disable sprite display.
 		move.w	#$14,$3A(a0)             ; Set routine counter timer.
 loc_12232:
 		subq.w	#1,$3A(a0)               ; Subtract 1 from the timer.
-		bne.s   loc_1223c		; If it hasn't finished, skip over the next routine load.
+		bne.s	loc_1223c		; If it hasn't finished, skip over the next routine load.
 		clr.w   $3C(a0)		  ;
 loc_1223C:
 		rts		              ; Return.
@@ -4678,7 +4682,7 @@ loc_1223C:
 
 loc_1223e:
 		bset    #7,(a0)		  ; Set object as loaded.
-		bne.s   loc_1225C		; If it was already loaded, branch.
+		bne.s	loc_1225C		; If it was already loaded, branch.
 		move.w	$38(a0),d0               ; Get object subtype.
 		lsl.w   #2,d0		    ; Multiply by 4 for longword tables.
 		move.l	loc_1225E(pc,d0.w),$C(a0); Load mappings pointer into its SST.
@@ -4753,7 +4757,7 @@ loc_122e0:
 		move.b	($FFFFFF8E).w,d0         ; Move player 1's held buttons into d0.
 		bclr    #7,d0		    ; Clear the start button bit.
 		cmpi.b	#$61,d0		  ; Are A, C and up being held?
-		bne.s   loc_12302		; If they're not, skip over the level select game mode change.
+		bne.s	loc_12302		; If they're not, skip over the level select game mode change.
 		move.w	#$10,($FFFFFFC0).w       ; Set to load the level select.
 loc_12302:
 		bsr.w	loc_11784		; TODO - Fade palettes?
@@ -4893,7 +4897,7 @@ loc_1245C:
 ; ======================================================================
 loc_12476:
 		bset    #7,(a0)		   ; Set object as loaded.
-		bne.s   loc_124B8		; If it was already loaded, branch.
+		bne.s	loc_124B8		; If it was already loaded, branch.
 		move.w	$38(a0),d0               ; Load object subtype.
 		bclr    #7,2(a0)		 ; Clear the horizontal flip bit.
 		move.b	loc_124ba(pc,d0.w),d1    ; Get the object's horizontal flip table value.
@@ -5164,7 +5168,7 @@ loc_1266e:
 		move.b	($FFFFD82D).w,d0         ; Get level number.
 		andi.b	#3,d0		    ; Get the level's number out of a group of 4.
 		cmpi.b	#3,d0		    ; Is this the 4th level out of every 4 (except for the first 3, because the first level is read as level 2).
-		bne.s   loc_12688		; If it isn't, branch.
+		bne.s	loc_12688		; If it isn't, branch.
 		move.w	#$28,($FFFFFFC0).w       ; Set to load the bonus stage.
 loc_12688:
 		jsr	($FFFFFB6C).w            ; TODO
@@ -5588,7 +5592,7 @@ loc_12b8c:
 
 loc_12b9a:
 		bset    #7,($FFFFD2A0).w
-		bne.s   loc_12bd2
+		bne.s	loc_12bd2
 loc_12BA2:
 		tst.b	($FFFFD2A4).w
 		beq.s	loc_12bb2
@@ -5614,7 +5618,7 @@ loc_12bd2:
 
 loc_12bdc:
 		bset    #7,($FFFFD2A0).w
-		bne.s   loc_12c2e
+		bne.s	loc_12c2e
 		clr.w   ($FFFFFF92).w
 		moveq	#$30,d7
 		bsr.w	loc_11774
@@ -5626,9 +5630,9 @@ loc_12bdc:
 		bsr.w	loc_1176a
 		lsr.w	#3,d0
 		cmp.b   loc_12c7c(pc,d0.w),d1
-		bne.s   loc_12c74
+		bne.s	loc_12c74
 		tst.b	($FFFFD88F).w
-		bne.s   loc_12c70
+		bne.s	loc_12c70
 		lsl.w   #2,d0
 		move.l	loc_12c82(pc,d0.w),($FFFFD262).w
 		moveq	#$A,d1
@@ -5642,7 +5646,7 @@ loc_12c16:
 loc_12c2e:
 		lea	($FFFFFF92).w,a0
 		cmpi.w	#8,(a0)
-		bne.s   loc_12c6a
+		bne.s	loc_12c6a
 		clr.w   (a0)
 		move.w	#$8000,($FFFFD884).w
 		bsr.w	loc_1168a
@@ -5652,7 +5656,7 @@ loc_12c2e:
 		movem.l (sp)+,d0/a0
 		addq.b	#1,($FFFFD88C).w
 		cmpi.b	#$A,($FFFFD88C).w
-		bne.s   loc_12c6a
+		bne.s	loc_12c6a
 		clr.b   ($FFFFD88C).w
 		clr.b   ($FFFFD88D).w
 		bra.s	loc_12c74
@@ -5696,9 +5700,9 @@ loc_12c9a:
 		lsl.w   #1,d0
 		move.w	($FFFFD888).w,d1
 		cmp.w   loc_12cce(pc,d0.w),d1
-		bhi.s   loc_12cc0
+		bhi.s	loc_12cc0
 		cmpi.b	#1,($FFFFD88D).w
-		bne.s   loc_12cc0
+		bne.s	loc_12cc0
 		bra.s	loc_12cc6
 
 loc_12cc0:
@@ -5717,7 +5721,7 @@ loc_12cce:
 loc_12CDA:
 
 		bset    #7,($FFFFD2A0).w
-		bne.s   loc_12cfe
+		bne.s	loc_12cfe
 		moveq	#$1E,d1
 loc_12ce4:
 		jsr	($FFFFFB6C).w
@@ -5757,14 +5761,14 @@ loc_12d1a:
 loc_12d42:
 		move.w	($FFFFFF92).w,d0
 		cmpi.w	#$FA,d0
-		bhi.s   loc_12d56
+		bhi.s	loc_12d56
 		bsr.w	loc_11740
 		bsr.w	loc_11e52
 		rts
 
 loc_12d56:
 		addq.b	#1,($FFFFD82D).w
-		bne.s   loc_12d60
+		bne.s	loc_12d60
 		addq.b	#1,($FFFFD82D).w
 loc_12D60:
 		move.b	($FFFFD82C).w,d0
@@ -5774,7 +5778,7 @@ loc_12D60:
 		move.b	d0,($FFFFD82C).w
 		move.w	#$18,($FFFFFFC0).w
 		cmpi.b	#$49,d0
-		bne.s   loc_12D82
+		bne.s	loc_12D82
 		move.w	#$30,($FFFFFFC0).w
 loc_12D82:
 		rts
@@ -5785,9 +5789,9 @@ loc_12d84:
 		lea	($FFFFC380).w,a0
 		lea	($FFFFC680).w,a1
 		tst.w	(a0)
-		bne.s   loc_12d98
+		bne.s	loc_12d98
 		tst.w	(a1)
-		bne.s   loc_12d98
+		bne.s	loc_12d98
 		move.w	#$18,(a1)
 loc_12d98:
 		lea	($FFFFC3C0).w,a0
@@ -5795,22 +5799,22 @@ loc_12d98:
 		lea	($FFFFC6C0).w,a2
 		lea	($FFFFC700).w,a3
 		tst.w	(a0)
-		bne.s   loc_12dbe
+		bne.s	loc_12dbe
 		tst.w	(a2)
-		bne.s   loc_12dbe
+		bne.s	loc_12dbe
 		tst.w	(a3)
-		bne.s   loc_12dbe
+		bne.s	loc_12dbe
 		move.w	#$18,(a2)
 		move.b	#1,$16(a2)
 loc_12dbe:
 		cmpi.b	#$A,($FFFFD82D).w
-		bcs.s   loc_12de2
+		bcs.s	loc_12de2
 		tst.w	(a1)
-		bne.s   loc_12de2
+		bne.s	loc_12de2
 		tst.w	(a3)
-		bne.s   loc_12de2
+		bne.s	loc_12de2
 		tst.w	(a2)
-		bne.s   loc_12de2
+		bne.s	loc_12de2
 		move.w	#$18,(a3)
 		move.w	#4,$3C(a3)
 		move.b	#2,$16(a3)
@@ -5889,11 +5893,11 @@ loc_12e90:
 		moveq	#4,d7
 loc_12E98:
 		btst	d1,($FFFFD887).w
-		bne.s   loc_12eb2
+		bne.s	loc_12eb2
 		move.w	d1,d2
 		lsl.w   #2,d2
 		cmp.l   loc_12ee0(pc,d2.w),d0
-		bcs.s   loc_12eb2
+		bcs.s	loc_12eb2
 		bset    d1,($FFFFD887).w
 		bsr.w	loc_12eba
 		bra.s	loc_12eb8
@@ -6026,7 +6030,7 @@ loc_13008:
 
 loc_1300e:
 		bset    #7,($FFFFD2A6).w
-		bne.s   loc_13032
+		bne.s	loc_13032
 loc_13016:
 		tst.b	($FFFFD2A4).w
 		beq.s	loc_13026
@@ -6094,14 +6098,14 @@ loc_130d4:
 		move.b	#1,($FFFFD27B).w
 		move.w	($FFFFFF92).w,d0         ; Move the game mode timer into d0.
 		cmpi.w	#$FA,d0
-		bhi.s   loc_130ee
+		bhi.s	loc_130ee
 		bsr.w	loc_11740
 		bsr.w	loc_11f6c
 		rts
 
 loc_130ee:
 		addq.b	#1,($FFFFD82D).w
-		bne.s   loc_130f8
+		bne.s	loc_130f8
 		addq.b	#1,($FFFFD82D).w
 loc_130f8:
 		move.b	($FFFFD82C).w,d0
@@ -6156,7 +6160,7 @@ loc_13176:
 loc_13182:
 		bsr.w	loc_131d6
 		cmpi.w	#$C8,($FFFFFF92).w
-		bne.s   loc_131d4
+		bne.s	loc_131d4
 		move.w	#4,($FFFFD29E).w
 		move.w	#$8100,($FFFFD884).w
 		move.w	#$0EEE,($FFFFF7E6).w
@@ -6199,7 +6203,7 @@ loc_13200:
 
 loc_1321a:
 		bset    #7,($FFFFD29E).w
-		bne.s   loc_1325a
+		bne.s	loc_1325a
 		lea	Pal_Main,a5
 		jsr	($FFFFFBBA).w
 		move.w	#$0EEE,($FFFFF7E6).w
@@ -6219,12 +6223,12 @@ loc_1325a:
 		bsr.w	loc_1130c
 		addq.b	#1,($FFFFD29D).w
 		cmpi.b	#$20,($FFFFD29D).w
-		bne.s   loc_1328c
+		bne.s	loc_1328c
 		clr.b   ($FFFFD29D).w
 		bsr.w	loc_1328e
 		addq.b	#1,($FFFFD29C).w
 		cmpi.b	#$5D,($FFFFD29C).w
-		bne.s   loc_1328c
+		bne.s	loc_1328c
 		move.w	#8,($FFFFD29E).w
 		lea	($FFFFC000).w,a0
 		move.w	#$44,(a0)
@@ -6238,7 +6242,7 @@ loc_1328e:
 		andi.w	#$00FF,d0
 		lsr.w	#3,d0
 		subq.w	#2,d0
-		bpl.s   loc_132a4
+		bpl.s	loc_132a4
 		addi.w	#$20,d0
 loc_132a4:
 		lsl.w   #6,d0
@@ -6378,7 +6382,7 @@ loc_134ba:
 
 loc_134bc:
 		bset    #7,(a0)
-		bne.s   loc_134e2
+		bne.s	loc_134e2
 		bset    #1,2(a0)
 		move.w	$38(a0),d0
 		move.b	loc_13516(pc,d0.w),$3A(a0)
@@ -6425,7 +6429,7 @@ loc_13516:
 loc_1351c:
 		move.b	($FFFFD29C).w,d0
 		cmp.b   $3A(a0),d0
-		bne.s   loc_1352c
+		bne.s	loc_1352c
 		move.w	#4,$3C(a0)
 loc_1352c:
 		rts
@@ -6434,7 +6438,7 @@ loc_1352c:
 
 loc_1352e:
 		bset    #7,$3C(a0)
-		bne.s   loc_13550
+		bne.s	loc_13550
 		move.w	#$E4,$30(a0)
 		move.w	#$178,$24(a0)
 		move.l	#$FFFFC000,$2C(a0)
@@ -6595,7 +6599,7 @@ loc_13a5e:
 		movea.l d0,a0
 		move.b	(a0),($FFFFFF8E).w
 		subq.b	#1,($FFFFD2AC).w
-		bne.s   loc_13a80
+		bne.s	loc_13a80
 		addq.l	#2,a0
 		move.b	(a0),($FFFFD2A8).w
 		move.b	1(a0),($FFFFD2AC).w
@@ -6620,7 +6624,7 @@ loc_13d70:
 
 loc_13e70:
 		bset    #7,(a0)		  ; Set the object as loaded.
-		bne.s   loc_13ea0		; If it was already loaded, branch.
+		bne.s	loc_13ea0		; If it was already loaded, branch.
 		move.l	#loc_144AC,8(a0)
 		move.b	$3E(a0),d7
 		move.b	$3F(a0),d6
@@ -6632,9 +6636,9 @@ loc_13e70:
 		move.b	#3,$3A(a0)
 loc_13ea0:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_13edc
+		bne.s	loc_13edc
 		tst.b	($FFFFD24F).w
-		bne.s   loc_13eb6
+		bne.s	loc_13eb6
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
 		jsr	loc_13ede(pc,d0.w)
@@ -6642,14 +6646,14 @@ loc_13eb6:
 		move.w	$3C(a0),d0
 		andi.w	#$7C,d0
 		cmpi.w	#4,d0
-		bcc.s   loc_13ece
+		bcc.s	loc_13ece
 		tst.b	($FFFFD24F).w
-		bne.s   loc_13ece
+		bne.s	loc_13ece
 		bsr.w	loc_14476
 loc_13ece:
 		bsr.w	loc_14272
 		tst.b	($FFFFD24E).w
-		bne.s   loc_13edc
+		bne.s	loc_13edc
 		bsr.w	loc_11c3c
 loc_13edc:
 		rts
@@ -6668,7 +6672,7 @@ loc_13eea:
 		bsr.s	loc_13f26
 		bsr.w	loc_142d6
 		tst.b	($FFFFD24F).w
-		bne.s   loc_13f00
+		bne.s	loc_13f00
 		bsr.w	loc_1130c
 loc_13f00:
 		bsr.w	loc_1105c
@@ -6679,7 +6683,7 @@ loc_13f00:
 		beq.s	loc_13f24
 		move.b	#1,$39(a0)
 		tst.l	d0
-		bmi.s   loc_13f24
+		bmi.s	loc_13f24
 		clr.b   $39(a0)
 loc_13f24:
 		rts
@@ -6698,7 +6702,7 @@ loc_13F42:
 		move.l	$30(a0),d2
 		move.l	d1,$34(a0)
 		tst.b	($FFFFD24E).w
-		bne.s   loc_13f54
+		bne.s	loc_13f54
 		move.l	d1,($FFFFD004).w
 loc_13f54:
 		bsr.w	loc_14038
@@ -6720,7 +6724,7 @@ loc_13f54:
 loc_13f98:
 		move.b	($FFFFFF8E).w,d0
 		andi.b	#$70,d0
-		bne.s   loc_13fa8
+		bne.s	loc_13fa8
 		move.b	#3,$3A(a0)
 loc_13fa8:
 		rts
@@ -6728,11 +6732,11 @@ loc_13fa8:
 loc_13faa:
 		move.l	$34(a0),d1
 		tst.b	$38(a0)
-		bne.s   loc_13f42
+		bne.s	loc_13f42
 		tst.l	d1
 		beq.s	loc_13fca
 		tst.l	d1
-		bmi.s   loc_13fc4
+		bmi.s	loc_13fc4
 		subi.l	#$00000600,d1
 		bra.s	loc_13fca
 
@@ -6772,7 +6776,7 @@ loc_1400a:
 loc_1401c:
 		move.b	($FFFFFF8E).w,d0
 		andi.b	#$70,d0
-		bne.s   loc_1402c
+		bne.s	loc_1402c
 		move.b	#3,$3A(a0)
 loc_1402c:
 		rts
@@ -6813,20 +6817,20 @@ loc_1407e:
 		move.w	$30(a0),d7
 		move.w	$24(a0),d6
 		tst.b	$38(a0)
-		bne.s   loc_1409e
+		bne.s	loc_1409e
 		addq.w	#1,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_1409c
+		bne.s	loc_1409c
 		move.b	#1,$38(a0)
 loc_1409c:
 		rts
 
 loc_1409e:
 		tst.l	$34(a0)
-		bne.s   loc_140da
+		bne.s	loc_140da
 		tst.l	$2C(a0)
-		bpl.s   loc_140bc
+		bpl.s	loc_140bc
 		subi.w	#$E,d6
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -6851,12 +6855,12 @@ loc_140d8:
 
 loc_140da:
 		tst.l	$2C(a0)
-		bpl.s   loc_140fe
+		bpl.s	loc_140fe
 		subi.w	#$E,d6
 		addq.w	#4,d7
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_140f8
+		bne.s	loc_140f8
 		subq.w	#8,d7
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -6870,7 +6874,7 @@ loc_140fe:
 		subq.w	#4,d7
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_14112
+		bne.s	loc_14112
 		addq.w	#8,d7
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -6891,12 +6895,12 @@ loc_14128:
 		move.w	$24(a0),d6
 		move.l	$34(a0),d5
 		tst.b	$38(a0)
-		bne.s   loc_1419a
+		bne.s	loc_1419a
 		subi.w	#$A,d6
 		tst.l	d5
 		beq.s	loc_1416e
 		tst.l	d5
-		bpl.s   loc_14170
+		bpl.s	loc_14170
 		subq.w	#6,d7
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -6935,13 +6939,13 @@ loc_1419a:
 		tst.l	d5
 		beq.w   loc_14248
 		tst.l	d5
-		bpl.s   loc_141dc
+		bpl.s	loc_141dc
 		subq.w	#6,d7
 		bsr.w	loc_1157c
 		tst.b	d4
 		beq.s	loc_141da
 		btst	#1,d4
-		bne.s   loc_141BC
+		bne.s	loc_141BC
 		btst	#0,d4
 		beq.s	loc_14212
 loc_141BC:
@@ -6962,7 +6966,7 @@ loc_141dc:
 		tst.b	d4
 		beq.s	loc_14210
 		btst	#1,d4
-		bne.s   loc_141f2
+		bne.s	loc_141f2
 		btst	#0,d4
 		beq.s	loc_14212
 loc_141f2:
@@ -6979,7 +6983,7 @@ loc_14210:
 
 loc_14212:
 		tst.l	$2C(a0)
-		bpl.s   loc_14232
+		bpl.s	loc_14232
 		move.w	d6,d0
 		andi.w	#7,d0
 		cmpi.w	#3,d0
@@ -7047,7 +7051,7 @@ loc_142bc:
 		move.l	$34(a0),d7
 		beq.s	loc_142d0
 		tst.l	d7
-		bpl.s   loc_142cc
+		bpl.s	loc_142cc
 		bset    #1,d0
 		bra.s	loc_142d0
 
@@ -7063,11 +7067,11 @@ loc_142d6:
 		tst.b	($FFFFD27A).w
 		beq.s	loc_14316
 		tst.b	$38(a0)
-		bne.s   loc_14316
+		bne.s	loc_14316
 		move.w	$30(a0),d7
 		move.w	$24(a0),d6
 		cmp.w   ($FFFFD25C).w,d6
-		bne.s   loc_14316
+		bne.s	loc_14316
 		cmp.w   ($FFFFD25E).w,d7
 		blt.s   loc_14316
 		cmp.w   ($FFFFD260).w,d7
@@ -7089,19 +7093,19 @@ loc_14318:
 		move.l	$34(a0),d0
 		move.b	($FFFFFF8E).w,d1
 		tst.b	$38(a0)
-		bne.s   loc_14366
+		bne.s	loc_14366
 		tst.l	d0
 		beq.s	loc_1435c
 		tst.l	d0
-		bpl.s   loc_14342
+		bpl.s	loc_14342
 		bset    #7,2(a0)
 		btst	#2,d1
-		bne.s   loc_14352
+		bne.s	loc_14352
 		bra.s	loc_14348
 
 loc_14342:
 		btst	#3,d1
-		bne.s   loc_14352
+		bne.s	loc_14352
 loc_14348:
 		move.l	#loc_1A8A0,$C(a0)
 		rts
@@ -7120,7 +7124,7 @@ loc_14366:
 		beq.s	loc_14380
 		move.w	#8,6(a0)
 		tst.l	d0
-		bpl.s   loc_1437A
+		bpl.s	loc_1437A
 		bset    #7,2(a0)
 loc_1437A:
 		bsr.w	AnimateSprite
@@ -7135,7 +7139,7 @@ loc_14380:
 
 loc_1438c:
 		bset    #7,$3C(a0)
-		bne.s   loc_143ae
+		bne.s	loc_143ae
 		move.l	a0,-(sp)
 		move.b	#$87,d0
 		jsr	($FFFFFB66).w
@@ -7150,9 +7154,9 @@ loc_143ae:
 		move.w	$24(a0),d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_143e4
+		bne.s	loc_143e4
 		tst.l	$2C(a0)
-		bpl.s   loc_143de
+		bpl.s	loc_143de
 		subq.w	#8,d6
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -7174,7 +7178,7 @@ loc_143e4:
 
 loc_143fc:
 		bset    #7,$3C(a0)
-		bne.s   loc_14418
+		bne.s	loc_14418
 		clr.b   5(a0)
 		clr.b   $10(a0)
 		bclr    #2,2(a0)
@@ -7188,7 +7192,7 @@ loc_14418:
 		bsr.w	loc_14464
 loc_14430:
 		tst.b	$39(a0)
-		bne.s   loc_14462
+		bne.s	loc_14462
 		subq.b	#1,($FFFFD882).w
 		beq.s	loc_1445c
 		move.b	#1,($FFFFD886).w
@@ -7280,7 +7284,7 @@ loc_144ce:
 
 loc_144dc:
 		bset    #7,(a0)
-		bne.s   loc_14504
+		bne.s	loc_14504
 		move.b	($FFFFD834).w,d7
 		move.b	($FFFFD835).w,d6
 		bsr.w	loc_11674
@@ -7329,7 +7333,7 @@ loc_14528:
 
 loc_1452e:
 		bset    #7,(a0)
-		bne.s   loc_1455e
+		bne.s	loc_1455e
 		move.l	($FFFFD828).w,d0
 		move.l	d0,$C(a0)
 		move.b	#$60,$13(a0)
@@ -7344,11 +7348,11 @@ loc_1452e:
 		move.w	d6,$24(a0)
 loc_1455e:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_1457a
+		bne.s	loc_1457a
 		tst.b	($FFFFD24F).w            ; Has everything been set to stop (depositing flickies)?
-		bne.s   loc_1457a		; If it has, branch.
+		bne.s	loc_1457a		; If it has, branch.
 		tst.b	($FFFFD26D).w
-		bne.s   loc_1457a
+		bne.s	loc_1457a
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
 		jsr	loc_1457c(pc,d0.w)
@@ -7368,12 +7372,12 @@ loc_14588:
 		move.b	#1,5(a0)
 		lea	($FFFFC440).w,a1
 		tst.l	$2C(a1)
-		bmi.s   loc_145b6
+		bmi.s	loc_145b6
 		bsr.w	loc_117c0
 		tst.b	d0
 		beq.s	loc_145b6
 		tst.b	$3B(a1)
-		bne.s   loc_145b6
+		bne.s	loc_145b6
 		move.w	#4,$3C(a0)
 		move.b	#1,$3B(a1)
 		move.l	a0,($FFFFD250).w
@@ -7385,7 +7389,7 @@ loc_145b6:
 
 loc_145bc:
 		bset    #7,$3C(a0)
-		bne.s   loc_145d0
+		bne.s	loc_145d0
 		move.l	a0,-(sp)
 		move.b	#$92,d0
 		bsr.w	loc_10d48
@@ -7402,7 +7406,7 @@ loc_145d0:
 
 loc_145ee:
 		tst.b	$39(a1)
-		bne.s   loc_145fc
+		bne.s	loc_145fc
 		addi.l	#$00080000,d7
 		bra.s	loc_14602
 
@@ -7418,7 +7422,7 @@ loc_14602:
 
 loc_14610:
 		bset    #7,$3C(a0)
-		bne.s   loc_14650
+		bne.s	loc_14650
 		move.l	a0,-(sp)
 		move.b	#$96,d0
 		bsr.w	loc_10d48
@@ -7441,7 +7445,7 @@ loc_14648:
 loc_14650:
 		bsr.w	loc_14688
 		tst.l	$34(a0)
-		bne.s   loc_1465c
+		bne.s	loc_1465c
 		clr.w   (a0)
 loc_1465c:
 		bsr.w	loc_14662
@@ -7471,14 +7475,14 @@ loc_14688:
 		move.l	$2C(a0),d6
 		bclr    #7,2(a0)
 		tst.l	d7
-		bpl.s   loc_146A0
+		bpl.s	loc_146A0
 		bset    #7,2(a0)
 loc_146A0:
 		bsr.w	AnimateSprite
 		tst.b	$38(a0)
-		bne.s   loc_146be
+		bne.s	loc_146be
 		tst.l	d7
-		bpl.s   loc_146b6
+		bpl.s	loc_146b6
 		addi.l	#$0000800,d7
 		bra.s	loc_146bc
 
@@ -7513,7 +7517,7 @@ loc_14700:
 		move.w	$24(a0),d6
 		subq.w	#4,d6
 		tst.l	$34(a0)
-		bpl.s   loc_14720
+		bpl.s	loc_14720
 		subq.w	#4,d7
 		bsr.w	loc_1157c
 		tst.b	d4
@@ -7722,7 +7726,7 @@ loc_14830:
 ; ======================================================================
 loc_1483e:
 		bset    #7,(a0)		  ; Set object as loaded.
-		bne.s   loc_14874		; If it was already loaded, branch.
+		bne.s	loc_14874		; If it was already loaded, branch.
 		move.l	#loc_14E12,8(a0)         ; Set to load the normal Chirp mappings.     TODO NOT MAPPINGS MAYBE RAM TABLE
 		tst.b	$3A(a0)		  ; Is the chick a sunglasses chick?
 		beq.s	loc_1485a		; If it isn't, branch.
@@ -7737,7 +7741,7 @@ loc_1485a:
 		move.w	d6,$24(a0)
 loc_14874:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_14898
+		bne.s	loc_14898
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
 		jsr	loc_1489a(pc,d0.w)
@@ -7745,7 +7749,7 @@ loc_14874:
 		beq.s	loc_14898
 		move.b	#1,$39(a0)
 		tst.l	d0
-		bmi.s   loc_14898
+		bmi.s	loc_14898
 		clr.b   $39(a0)
 loc_14898:
 		rts
@@ -7762,15 +7766,15 @@ loc_1489a:
 
 loc_148aa:
 		tst.b	($FFFFD24F).w
-		bne.s   loc_14916
+		bne.s	loc_14916
 		bset    #7,$3C(a0)
-		bne.s   loc_148C6
+		bne.s	loc_148C6
 		move.b	#$30,$3B(a0)
 		move.l	#$FFFFE000,$2C(a0)
 loc_148C6:
 		clr.w   6(a0)
 		subq.b	#1,$3B(a0)
-		bne.s   loc_148DA
+		bne.s	loc_148DA
 		neg.l   $2C(a0)
 		move.b	#$30,$3B(a0)
 loc_148DA:
@@ -7797,7 +7801,7 @@ loc_14916:
 
 loc_14918:
 		bset    #7,$3C(a0)
-		bne.s   loc_14928
+		bne.s	loc_14928
 		clr.l   $34(a0)
 		clr.l   $2C(a0)
 loc_14928:
@@ -7825,7 +7829,7 @@ loc_14940:
 		move.b	(a1),d1
 		move.w	d1,-(sp)
 		tst.b	($FFFFD24F).w
-		bne.s   loc_1497c
+		bne.s	loc_1497c
 		bsr.w	loc_14af0
 loc_1497c:
 		move.w	(sp)+,d1
@@ -7835,9 +7839,9 @@ loc_1497c:
 		move.w	$30(a1),d7
 		move.w	$24(a1),d6
 		cmp.w   $30(a0),d7
-		bne.s   loc_149f2
+		bne.s	loc_149f2
 		cmp.w   $24(a0),d6
-		bne.s   loc_149f2
+		bne.s	loc_149f2
 		move.l	a0,-(sp)
 		move.b	#$94,d0
 		bsr.w	loc_10d48
@@ -7845,7 +7849,7 @@ loc_1497c:
 		clr.w   (a0)
 		bsr.w	loc_14a7c
 		subq.b	#1,($FFFFD883).w
-		bne.s   loc_149ce
+		bne.s	loc_149ce
 		move.b	#1,($FFFFD281).w
 		clr.w   ($FFFFFF92).w
 		move.b	($FFFFD888).w,($FFFFD266).w
@@ -7860,7 +7864,7 @@ loc_149D2:
 		movea.l (sp)+,a0
 		clr.b   $38(a0)
 		subq.b	#1,($FFFFD27A).w
-		bne.s   loc_149f2
+		bne.s	loc_149f2
 		clr.b   ($FFFFD24F).w
 		move.l	a0,-(sp)
 		bsr.w	loc_11d18
@@ -7879,17 +7883,17 @@ loc_14a12:
 		clr.b   $39(a0)
 		move.b	d1,d0
 		andi.b	#3,d0
-		bne.s   loc_14a2a
+		bne.s	loc_14a2a
 		clr.w   6(a0)
 		bra.s	loc_14a4e
 loc_14a2a:
 		btst	#0,d1
-		bne.s   loc_14a3c
+		bne.s	loc_14a3c
 		bset    #7,2(a0)
 		move.b	#1,$39(a0)
 loc_14a3c:
 		tst.b	d1
-		bmi.s   loc_14a48
+		bmi.s	loc_14a48
 		move.w	#8,6(a0)
 		bra.s	loc_14a4e
 
@@ -7991,7 +7995,7 @@ loc_14AF6:
 		moveq	#7,d1
 loc_14B12:
 		cmp.b   $38(a2),d0
-		bhi.s   loc_14b26
+		bhi.s	loc_14b26
 		clr.b   $38(a2)
 		subq.b	#1,($FFFFD27A).w
 		move.w	#8,$3C(a2)
@@ -8019,7 +8023,7 @@ loc_14b42:
 		tst.b	$3A(a0)
 		bne.w   loc_14c6a
 		bset    #7,$3C(a0)
-		bne.s   loc_14b76
+		bne.s	loc_14b76
 		moveq	#0,d0
 		move.w	a0,d0
 		subi.w	#$C480,d0
@@ -8040,7 +8044,7 @@ loc_14b76:
 		addq.w	#1,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_14ba4
+		bne.s	loc_14ba4
 		addi.l	#$00001000,$2C(a0)
 		move.w	#4,6(a0)
 		bra.s	loc_14bf6
@@ -8049,7 +8053,7 @@ loc_14ba4:
 		move.l	$34(a0),d0
 		beq.s	loc_14bba
 		tst.b	$39(a0)
-		bne.s   loc_14bc6
+		bne.s	loc_14bc6
 		subi.l	#$00000400,$34(a0)
 		bra.s	loc_14bdc
 
@@ -8071,7 +8075,7 @@ loc_14bdc:
 		subq.w	#6,d6
 		moveq	#4,d0
 		tst.l	$34(a0)
-		bpl.s   loc_14be8
+		bpl.s	loc_14be8
 		neg.w   d0
 loc_14be8:
 		add.w	d0,d7
@@ -8101,7 +8105,7 @@ loc_14c20:
 loc_14c2e:
 		bclr    #7,2(a0)
 		tst.l	$34(a0)
-		bpl.s   loc_14c40
+		bpl.s	loc_14c40
 		bset    #7,2(a0)
 loc_14c40:
 		bsr.w	AnimateSprite
@@ -8124,7 +8128,7 @@ loc_14c4a:
 
 loc_14c6a:
 		bset    #7,$3C(a0)
-		bne.s   loc_14c96
+		bne.s	loc_14c96
 		moveq	#0,d0
 		move.w	a0,d0
 		subi.w	#$C480,d0
@@ -8145,7 +8149,7 @@ loc_14c96:
 		addq.w	#1,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_14cc4
+		bne.s	loc_14cc4
 		addi.l	#$00001000,$2C(a0)
 		move.w	#4,6(a0)
 		bra.s	loc_14cde
@@ -8154,7 +8158,7 @@ loc_14cc4:
 		subq.w	#6,d6
 		moveq	#4,d0
 		tst.l	$34(a0)
-		bpl.s   loc_14cd0
+		bpl.s	loc_14cd0
 		neg.w   d0
 loc_14cd0:
 		add.w	d0,d7
@@ -8184,7 +8188,7 @@ loc_14d08:
 loc_14d16:
 		bclr    #7,2(a0)
 		tst.l	$34(a0)
-		bpl.s   loc_14d28
+		bpl.s	loc_14d28
 		bset    #7,2(a0)
 loc_14d28:
 		bsr.w	AnimateSprite
@@ -8209,7 +8213,7 @@ loc_14d52:
 		lea	($FFFFC440).w,a1
 		move.w	$3C(a1),d0
 		andi.w	#$7C,d0
-		bne.s   loc_14d84
+		bne.s	loc_14d84
 		bsr.w	loc_117c0
 		tst.b	d0
 		beq.s	loc_14d84
@@ -8228,7 +8232,7 @@ loc_14d84:
 loc_14d86:
 		bsr.w	loc_1105c
 		bset    #7,$3C(a0)
-		bne.s   loc_14da2
+		bne.s	loc_14da2
 		bclr    #2,2(a0)
 		move.w	#$C,6(a0)
 		clr.b   $10(a0)
@@ -8253,7 +8257,7 @@ loc_14dd0:
 loc_14dd4:
 		clr.l   ($FFFFD268).w
 		tst.b	($FFFFD266).w
-		bne.s   loc_14df8
+		bne.s	loc_14df8
 		moveq	#0,d0
 		move.b	($FFFFD267).w,d0
 		lsr.w	#4,d0
@@ -8401,7 +8405,7 @@ loc_14ebc:
 
 loc_14ec6:
 		bset    #7,(a0)
-		bne.s   loc_14efa
+		bne.s	loc_14efa
 		moveq	#0,d7
 		moveq	#0,d6
 		move.b	$3E(a0),d7
@@ -8416,11 +8420,11 @@ loc_14ec6:
 		clr.l   $2C(a0)
 loc_14efa:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_14f2e
+		bne.s	loc_14f2e
 		tst.b	($FFFFD24F).w
-		bne.s   loc_14f2e
+		bne.s	loc_14f2e
 		tst.b	($FFFFD26D).w
-		bne.s   loc_14f2e
+		bne.s	loc_14f2e
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
 		jsr	loc_14f44(pc,d0.w)
@@ -8436,7 +8440,7 @@ loc_14f2e:
 		beq.s	loc_14f42
 		move.b	#1,$39(a0)
 		tst.l	d0
-		bmi.s   loc_14f42
+		bmi.s	loc_14f42
 		clr.b   $39(a0)
 loc_14f42:
 		rts
@@ -8457,7 +8461,7 @@ loc_14f44:
 
 loc_14f64:
 		bset    #7,$3C(a0)
-		bne.s   loc_14f80
+		bne.s	loc_14f80
 		clr.w   6(a0)
 		bclr    #2,2(a0)
 		clr.b   $10(a0)
@@ -8477,9 +8481,9 @@ loc_14f80:
 		move.b	#1,$39(a0)
 loc_14fb0:
 		cmpi.w	#$30,($FFFFD888).w
-		bhi.s   loc_14fd0
+		bhi.s	loc_14fd0
 		cmpi.b	#$31,($FFFFD82D).w
-		bhi.s   loc_14fd0
+		bhi.s	loc_14fd0
 		clr.b   $39(a0)
 		tst.b	$16(a0)
 		beq.s	loc_14fd0
@@ -8491,7 +8495,7 @@ loc_14fd0:
 
 loc_14fd2:
 		bset    #7,$3C(a0)
-		bne.s   loc_15004
+		bne.s	loc_15004
 		move.b	#7,5(a0)
 		clr.l   $34(a0)
 		move.b	#$14,$3B(a0)
@@ -8515,7 +8519,7 @@ loc_15004:
 
 loc_1502e:
 		tst.b	$39(a0)
-		bne.s   loc_1504e
+		bne.s	loc_1504e
 		cmp.w   d7,d5
 		bgt.s   loc_15040
 		move.w	#$10,$3C(a0)
@@ -8541,7 +8545,7 @@ loc_1505a:
 
 loc_15068:
 		bset    #7,$3C(a0)
-		bne.s   loc_15094
+		bne.s	loc_15094
 		move.b	#7,5(a0)
 		move.l	($FFFFD296).w,$34(a0)
 		tst.b	$16(a0)
@@ -8557,7 +8561,7 @@ loc_15094:
 		move.w	$24(a0),d6
 		subq.w	#8,d6
 		tst.l	$34(a0)
-		bpl.s   loc_150ac
+		bpl.s	loc_150ac
 		subq.w	#8,d7
 		bra.s	loc_150ae
 loc_150ac:
@@ -8572,25 +8576,25 @@ loc_150ba:
 		moveq	#1,d6
 		bsr.w	loc_115c0
 		btst	#7,d4
-		bne.s   loc_150ea
+		bne.s	loc_150ea
 		tst.l	$34(a0)
-		bpl.s   loc_150dc
+		bpl.s	loc_150dc
 		btst	#2,d4
-		bne.s   loc_150da
+		bne.s	loc_150da
 		move.w	#4,$3C(a0)
 loc_150da:
 		bra.s	loc_15114
 loc_150dc:
 		btst	#3,d4
-		bne.s   loc_150e8
+		bne.s	loc_150e8
 		move.w	#4,$3C(a0)
 loc_150e8:
 		bra.s	loc_15114
 loc_150ea:
 		tst.b	$39(a0)
-		bne.s   loc_150f8
+		bne.s	loc_150f8
 		btst	#6,d4
-		bne.s   loc_15114
+		bne.s	loc_15114
 		bra.s	loc_150fe
 
 loc_150f8:
@@ -8606,7 +8610,7 @@ loc_150fe:
 loc_15114:
 		bclr    #7,2(a0)
 		tst.l	$34(a0)
-		bpl.s   loc_12126
+		bpl.s	loc_12126
 		bset    #7,2(a0)
 loc_12126:
 		move.w	#4,6(a0)
@@ -8638,7 +8642,7 @@ loc_1515a:
 		tst.b	$3B(a0)
 		bne.w   loc_1524c
 		bset    #7,$3C(a0)
-		bne.s   loc_151b4
+		bne.s	loc_151b4
 		move.b	#7,5(a0)
 		move.b	$3A(a0),d0
 		beq.s	loc_1518c
@@ -8667,10 +8671,10 @@ loc_151b4:
 		move.w	$24(a0),d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_1520c
+		bne.s	loc_1520c
 		subq.w	#8,d6
 		tst.l	$34(a0)
-		bpl.s   loc_151dc
+		bpl.s	loc_151dc
 		subq.w	#8,d7
 		bra.s	loc_151de
 loc_151dc:
@@ -8683,7 +8687,7 @@ loc_151de:
 		bra.s	loc_15222
 loc_151ec:
 		tst.l	$2C(a0)
-		bpl.s   loc_1520a
+		bpl.s	loc_1520a
 		move.w	$30(a0),d7
 		move.w	$24(a0),d6
 		subi.w	#$D,d6
@@ -8703,7 +8707,7 @@ loc_1520c:
 loc_15222:
 		move.l	#loc_1A970,$C(a0)
 		tst.l	$2C(a0)
-		bmi.s   loc_15238
+		bmi.s	loc_15238
 		move.l	#loc_1A97E,$C(a0)
 loc_15238:
 		bclr    #7,2(a0)
@@ -8722,9 +8726,9 @@ loc_1524c:
 
 loc_15256:
 		tst.b	$3B(a0)
-		bne.s   loc_152aa
+		bne.s	loc_152aa
 		bset    #7,$3C(a0)
-		bne.s   loc_1527a
+		bne.s	loc_1527a
 		move.b	#7,5(a0)
 		bclr    #2,2(a0)
 		move.w	#$C,6(a0)
@@ -8753,13 +8757,13 @@ loc_152aa:
 
 loc_152b4:
 		bset    #7,$3C(a0)
-		bne.s   loc_152e4
+		bne.s	loc_152e4
 		move.l	a0,-(sp)
 		move.b	#$93,d0
 		bsr.w	loc_10d48
 		movea.l (sp)+,a0
 		tst.b	$16(a0)
-		bne.s   loc_152D6
+		bne.s	loc_152D6
 		addi.l	#$1000,($FFFFD296).w
 loc_152D6:
 		clr.b   5(a0)
@@ -8768,7 +8772,7 @@ loc_152D6:
 loc_152e4:
 		bsr.w	loc_14688
 		tst.l	$34(a0)
-		bne.s   loc_152f4
+		bne.s	loc_152f4
 		move.w	#$1C,$3C(a0)
 loc_152f4:
 		rts
@@ -8777,7 +8781,7 @@ loc_152f4:
 
 loc_152f6:
 		bset    #7,$3C(a0)
-		bne.s   loc_15328
+		bne.s	loc_15328
 		move.b	#7,5(a0)
 		clr.l   $34(a0)
 		move.b	#$14,$3B(a0)
@@ -8807,7 +8811,7 @@ loc_15352:
 
 loc_15360:
 		tst.b	$39(a0)
-		bne.s   loc_15380
+		bne.s	loc_15380
 		cmp.w   d7,d5
 		bgt.s   loc_15372
 		move.w	#$10,$3C(a0)
@@ -8838,7 +8842,7 @@ loc_1539a:
 
 loc_153a4:
 		bset    #7,$3C(a0)
-		bne.s   loc_153c8
+		bne.s	loc_153c8
 		clr.b   5(a0)
 		bclr    #2,2(a0)
 		move.w	#$10,6(a0)
@@ -8851,7 +8855,7 @@ loc_153c8:
 		beq.s	loc_15408
 		move.b	($FFFFD88A).w,d0
 		andi.b	#$F0,d0
-		bne.s   loc_15404
+		bne.s	loc_15404
 		lea	($FFFFC740).w,a1
 		tst.b	$16(a0)
 		beq.s	loc_153f0
@@ -8899,7 +8903,7 @@ loc_15410:
 		moveq	#3,d0
 loc_15460:
 		tst.b	(a2)
-		bne.s   loc_15484
+		bne.s	loc_15484
 		move.w	#$1C,(a2)
 		move.b	$3B(a1),d1
 		move.b	d1,$3A(a2)
@@ -9420,7 +9424,7 @@ loc_15d28:
 ; ======================================================================
 loc_15d58:
 		bset    #7,(a0)
-		bne.s   loc_15d8c
+		bne.s	loc_15d8c
 		moveq	#0,d7
 		moveq	#0,d6
 		move.b	$3E(a0),d7
@@ -9435,11 +9439,11 @@ loc_15d58:
 		clr.l   $2C(a0)
 loc_15d8c:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_15dc0
+		bne.s	loc_15dc0
 		tst.b	($FFFFD24F).w
-		bne.s   loc_15dc0
+		bne.s	loc_15dc0
 		tst.b	($FFFFD26D).w
-		bne.s   loc_15dc0
+		bne.s	loc_15dc0
 		moveq	#$7C,d0
 		and.w   $3C(a0),d0
 		jsr	loc_15dc2(pc,d0.w)
@@ -9466,14 +9470,14 @@ loc_15dc2:
 
 loc_15dd6:
 		bset    #7,$3C(a0)
-		bne.s   loc_15df2
+		bne.s	loc_15df2
 		move.b	#4,5(a0)
 		move.l	#loc_1AB74,$C(a0)
 		move.b	#$A,$3B(a0)
 loc_15df2:
 		bsr.w	loc_1105c
 		subq.b	#1,$3B(a0)
-		bne.s   loc_15e02
+		bne.s	loc_15e02
 		move.w	#4,$3C(a0)
 loc_15e02:
 		rts
@@ -9482,7 +9486,7 @@ loc_15e02:
 
 loc_15e04:
 		bset    #7,$3C(a0)
-		bne.s   loc_15e12
+		bne.s	loc_15e12
 		move.b	#5,5(a0)
 loc_15e12:
 		moveq	#0,d0
@@ -9520,12 +9524,12 @@ loc_15e40:
 		subq.w	#4,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_15ea8
+		bne.s	loc_15ea8
 		moveq	#0,d7
 		moveq	#-4,d6
 		bsr.w	loc_115c0
 		tst.b	d4
-		bne.s   loc_15ed6
+		bne.s	loc_15ed6
 		bsr.w	AnimateSprite
 		rts
 
@@ -9576,12 +9580,12 @@ loc_15ee6:
 		addq.w	#4,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_15f5a
+		bne.s	loc_15f5a
 		moveq	#0,d7
 		moveq	#4,d6
 		bsr.w	loc_115c0
 		tst.b	d4
-		bne.s   loc_15f8e
+		bne.s	loc_15f8e
 		bsr.w	AnimateSprite
 		rts
 
@@ -9640,7 +9644,7 @@ loc_15f9e:
 		subq.w	#4,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_16004
+		bne.s	loc_16004
 		bsr.w	AnimateSprite
 		rts
 
@@ -9688,7 +9692,7 @@ loc_16036:
 		addq.w	#4,d6
 		bsr.w	loc_1157c
 		tst.b	d4
-		bne.s   loc_1609a
+		bne.s	loc_1609a
 		bsr.w	AnimateSprite
 		rts
 
@@ -9723,11 +9727,11 @@ loc_1609a:
 
 loc_160c8:
 		bset    #7,$3C(a0)
-		bne.s   loc_160d6
+		bne.s	loc_160d6
 		move.b	#5,5(a0)
 loc_160d6:
 		btst	#1,$3A(a0)
-		bne.s   loc_16136
+		bne.s	loc_16136
 		move.w	#$10,6(a0)
 		clr.l   $34(a0)
 		move.l	($FFFFD27C).w,d0
@@ -9738,7 +9742,7 @@ loc_160d6:
 		move.w	$24(a0),d6
 		subq.w	#8,d6
 		bsr.w	loc_1157c
-		bne.s   loc_1610c
+		bne.s	loc_1610c
 		bsr.w	AnimateSprite
 		rts
 
@@ -9762,7 +9766,7 @@ loc_16136:
 		move.w	$24(a0),d6
 		addq.w	#8,d6
 		bsr.w	loc_1157c
-		bne.s   loc_16160
+		bne.s	loc_16160
 		bsr.w	AnimateSprite
 		rts
 
@@ -9780,7 +9784,7 @@ loc_16160:
 
 loc_16188:
 		bset    #7,$3C(a0)
-		bne.s   loc_161aa
+		bne.s	loc_161aa
 		move.l	a0,-(sp)
 		move.b	#$93,d0
 		bsr.w	loc_10d48
@@ -9791,7 +9795,7 @@ loc_16188:
 loc_161aa:
 		bsr.w	loc_14688
 		tst.l	$34(a0)
-		bne.s   loc_161ba
+		bne.s	loc_161ba
 		move.w	#$10,$3C(a0)
 loc_161ba:
 		rts
@@ -9800,7 +9804,7 @@ loc_161ba:
 
 loc_161bc:
 		bset    #7,$3C(a0)
-		bne.s   loc_161e0
+		bne.s	loc_161e0
 		bclr    #2,2(a0)
 		move.w	#$1C,6(a0)
 		clr.b   $10(a0)
@@ -9813,7 +9817,7 @@ loc_161e0:
 		beq.s	loc_16216
 		move.b	($FFFFD88A).w,d0
 		andi.b	#$F0,d0
-		bne.s   loc_16212
+		bne.s	loc_16212
 		lea	($FFFFC7C0).w,a1
 		move.w	$30(a0),d7
 		move.w	$24(a0),d6
@@ -9858,7 +9862,7 @@ loc_1621E:
 		moveq	#3,d0
 loc_1626E:
 		tst.b	(a2)
-		bne.s   loc_16292
+		bne.s	loc_16292
 		move.w	#$1C,(a2)
 		move.b	$3B(a1),d1
 		move.b	d1,$3A(a2)
@@ -9963,7 +9967,7 @@ loc_16308:
 ; ======================================================================
 loc_16312:
 		bset    #7,(a0)		  ; Set the object as loaded.
-		bne.s   loc_1633e		; If it was already loaded, branch.
+		bne.s	loc_1633e		; If it was already loaded, branch.
 		move.b	$3E(a0),d7               ;
 		move.b	$3F(a0),d6               ;
 		bsr.w	loc_11674		;
@@ -9977,9 +9981,9 @@ loc_16312:
 loc_1633E:
 		move.l	#loc_163E0,8(a0)
 		tst.b	($FFFFD24F).w
-		bne.s   loc_1635c
+		bne.s	loc_1635c
 		tst.b	($FFFFD27B).w
-		bne.s   loc_1635c
+		bne.s	loc_1635c
 		moveq	#$7C,d0		  ; Set routine counter variable as $7C.
 		and.w   $3C(a0),d0               ; And by routine to get values 0 or 4.
 		jsr	loc_1635e(pc,d0.w)       ; Jump to that routine.
@@ -9996,13 +10000,13 @@ loc_1635e:
 
 loc_16366:
 		bset    #7,$3C(a0)               ; Set routine as ran.
-		bne.s   loc_16378		; If it's already ran, branch.
+		bne.s	loc_16378		; If it's already ran, branch.
 		addq.b	#1,($FFFFD26C).w         ;
 		bset    #1,2(a0)		 ; Turn off object's display.
 loc_16378:
 		bsr.w	loc_1105c		;
 		tst.w	$38(a0)		  ;
-		bne.s   loc_16390		;
+		bne.s	loc_16390		;
 		bclr    #1,2(a0)		 ; Turn on object's display.
 		move.w	#4,$3C(a0)               ; Set to load the next routine.
 		rts
@@ -10015,7 +10019,7 @@ loc_16390:
 
 loc_16396:
 		bset    #7,$3C(a0)
-		bne.s   loc_163AC
+		bne.s	loc_163AC
 		bclr    #2,2(a0)
 		clr.b   $10(a0)
 		clr.w   6(a0)
@@ -10030,7 +10034,7 @@ loc_163AC:
 		move.w	#$10,(a1)
 		move.b	d0,$16(a1)
 		cmpi.b	#2,d0
-		bne.s   loc_163DA
+		bne.s	loc_163DA
 		move.w	#$14,(a1)
 loc_163DA:
 		bsr.w	loc_11118
@@ -10080,7 +10084,7 @@ loc_163E4:
 
 loc_16422:
 		bset    #7,(a0)		  ; Set object as loaded.
-		bne.s   loc_16442		; If it was already loaded, branch.
+		bne.s	loc_16442		; If it was already loaded, branch.
 		moveq	#0,d0		    ; Clear d0.
 		move.b	$3A(a0),d0               ; Load the TODO into d0.
 		subq.b	#1,d0		    ;
@@ -10092,7 +10096,7 @@ loc_16422:
 loc_16442:
 		bsr.w	loc_1105c
 		subq.w	#1,$38(a0)
-		bne.s   loc_1644e
+		bne.s	loc_1644e
 		clr.w   (a0)
 loc_1644e:
 		rts
@@ -10108,7 +10112,7 @@ loc_16450:
 
 loc_16456:
 		bset    #7,(a0)
-		bne.s   loc_16490
+		bne.s	loc_16490
 		move.b	$3A(a0),d0
 		subq.b	#1,d0
 		lsl.w   #1,d0
@@ -10118,7 +10122,7 @@ loc_16456:
 		lsl.w   #2,d0
 		move.w	($FFFFD25C).w,d6
 		cmpi.w	#$F0,d6
-		bcs.s   loc_16482
+		bcs.s	loc_16482
 		sub.w	d0,d6
 		subi.w	#$18,d6
 		bra.s	loc_16486
@@ -10132,7 +10136,7 @@ loc_16486:
 loc_16490:
 		bsr.w	loc_1105c
 		subq.w	#1,$38(a0)
-		bne.s   loc_1649c
+		bne.s	loc_1649c
 		clr.w   (a0)
 loc_1649c:
 		rts
@@ -10153,7 +10157,7 @@ loc_1649e:
 
 loc_164ae:
 		bset    #7,(a0)
-		bne.s   loc_164cc
+		bne.s	loc_164cc
 		moveq	#0,d0
 		move.b	$3A(a0),d0
 		lsl.w   #1,d0
@@ -10164,7 +10168,7 @@ loc_164ae:
 loc_164cc:
 		bsr.w	loc_1105c
 		subq.w	#1,$38(a0)
-		bne.s   loc_164d8
+		bne.s	loc_164d8
 		clr.w   (a0)
 loc_164d8:
 		rts
@@ -10186,7 +10190,7 @@ loc_164da:
 
 loc_164ec:
 		bset    #7,(a0)
-		bne.s   loc_1651a
+		bne.s	loc_1651a
 		clr.b   5(a0)
 		clr.l   $34(a0)
 		clr.l   $2C(a0)
@@ -10210,7 +10214,7 @@ loc_1651a:
 		moveq	#3,d0
 loc_16540:
 		tst.w	(a2)
-		bne.s   loc_16574
+		bne.s	loc_16574
 		move.w	$30(a0),d7
 		move.w	$24(a0),d6
 		move.w	d7,$30(a2)
@@ -10231,7 +10235,7 @@ loc_16574:
 		dbf	d0,loc_16540
 loc_1657c:
 		subq.w	#1,$38(a0)
-		bne.s   loc_16586
+		bne.s	loc_16586
 loc_16582:
 		bsr.w	loc_11118
 loc_16586:
@@ -10268,7 +10272,7 @@ loc_165b0:
 
 loc_165ba:
 		bset    #7,(a0)
-		bne.s   loc_165f0
+		bne.s	loc_165f0
 		move.w	#$140,$30(a0)
 		bclr    #7,2(a0)
 		tst.b	$16(a0)
@@ -10281,7 +10285,7 @@ loc_165de:
 		clr.w   6(a0)
 loc_165f0:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_165fe
+		bne.s	loc_165fe
 		bsr.w	loc_1105c
 		bsr.w	AnimateSprite
 loc_165fe:
@@ -10291,7 +10295,7 @@ loc_165fe:
 
 loc_16600:
 		bset    #7,(a0)
-		bne.s   loc_16638
+		bne.s	loc_16638
 		move.w	#$130,$30(a0)
 		bclr    #7,2(a0)
 		tst.b	$16(a0)
@@ -10304,7 +10308,7 @@ loc_16624:
 		move.w	#4,6(a0)
 loc_16638:
 		tst.b	($FFFFD27B).w
-		bne.s   loc_16646
+		bne.s	loc_16646
 		bsr.w	loc_1105c
 		bsr.w	AnimateSprite
 loc_16646:
@@ -10373,7 +10377,7 @@ loc_166b4:
 
 loc_166c6:
 		bset    #7,(a0)
-		bne.s   loc_166EC
+		bne.s	loc_166EC
 		bset    #1,2(a0)
 		move.l	#loc_14E12,8(a0)
 		movea.l ($FFFFD282).w,a1
@@ -10400,9 +10404,9 @@ loc_166fc:
 
 loc_16708:
 		tst.w	$3A(a0)
-		bne.s   loc_16778
+		bne.s	loc_16778
 		bset    #7,$3C(a0)
-		bne.s   loc_16756
+		bne.s	loc_16756
 		bclr    #1,2(a0)
 		move.w	#4,6(a0)
 		move.w	#$150,$24(a0)
@@ -10418,7 +10422,7 @@ loc_16756:
 		bsr.w	loc_1105C
 		lea	($FFFFC640).w,a1
 		tst.b	$39(a0)
-		bne.s   loc_16768
+		bne.s	loc_16768
 		lea	$40(a1),a1
 loc_16768:
 		bsr.w	loc_117C0
@@ -10439,7 +10443,7 @@ loc_16778:
 
 loc_16782:
 		bset    #7,$3C(a0)
-		bne.s   loc_167b8
+		bne.s	loc_167b8
 		movea.l ($FFFFD286).w,a1
 		moveq	#0,d0
 		move.b	$38(a0),d0
@@ -10458,7 +10462,7 @@ loc_16782:
 		bsr.w	loc_16892
 loc_167b8:
 		addi.l	#$00001000,$2C(a0)
-		bne.s   loc_167c8
+		bne.s	loc_167c8
 		move.w	#8,$3C(a0)
 loc_167c8:
 		bsr.w	loc_16854
@@ -10470,10 +10474,10 @@ loc_167c8:
 
 loc_167d6:
 		bset    #7,$3C(a0)
-		bne.s   loc_16806
+		bne.s	loc_16806
 		clr.w   6(a0)
 		move.l	$34(a0),d7
-		bpl.s   loc_167f0
+		bpl.s	loc_167f0
 		neg.l   d7
 		lsr.l   #1,d7
 		neg.l   d7
@@ -10496,13 +10500,13 @@ loc_16818:
 		bsr.w	loc_1105c
 		bsr.w	loc_168e2
 		cmpi.w	#$180,$24(a0)
-		bcs.s   loc_16834
+		bcs.s	loc_16834
 		bsr.w	loc_110f0
 		subq.b	#1,($FFFFD883).w
 loc_16834:
 		bsr.w	AnimateSprite
 		tst.b	($FFFFD883).w
-		bne.s   loc_16852
+		bne.s	loc_16852
 		clr.w   ($FFFFFF92).w
 		move.b	#1,($FFFFD281).w
 		move.w	#4,($FFFFD2A6).w
@@ -10516,7 +10520,7 @@ loc_16854:
 		cmpi.w	#-1,d0
 		beq.s	loc_16890
 		subq.w	#1,d0
-		bne.s   loc_1686c
+		bne.s	loc_1686c
 		addq.b	#1,$3E(a0)
 		bsr.w	loc_16892
 		bra.s	loc_16854
@@ -10525,7 +10529,7 @@ loc_1686c:
 		move.w	d0,$3A(a0)
 		move.l	$34(a0),d7
 		move.l	$1C(a0),d6
-		bmi.s   loc_16884
+		bmi.s	loc_16884
 		cmp.l   d6,d7
 		bge.s   loc_16882
 		add.l	$18(a0),d7
@@ -10602,7 +10606,7 @@ loc_1691c:
 		lea	loc_1694c(pc),a6
 		bsr.w	WriteASCIIString
 		cmpi.b	#$14,($FFFFD28E).w
-		bne.s   loc_16942
+		bne.s	loc_16942
 		lea	loc_16964(pc),a6
 		bsr.w	WriteASCIIString
 		lea	loc_16974(pc),a6
@@ -10657,7 +10661,7 @@ loc_169a8:
 		move.l	d0,($FFFFD262).w
 		bsr.w	loc_1168a
 		cmpi.b	#$14,($FFFFD28E).w
-		bne.s   loc_169d2
+		bne.s	loc_169d2
 		move.l	#$10000,($FFFFD262).w
 		bsr.w	loc_1168a
 loc_169d2:
@@ -11110,7 +11114,7 @@ loc_16DA0:
 
 loc_16daa:
 		bset    #7,(a0)
-		bne.s   loc_16dca
+		bne.s	loc_16dca
 		move.w	#$D8,$20(a0)
 		move.w	#$118,$24(a0)
 		move.l	#loc_1ACA4,$C(a0)
@@ -11123,7 +11127,7 @@ loc_16dca:
 ; ======================================================================
 loc_16dcc:
 		bset    #7,(a0)		  ; Set the object as loaded.
-		bne.s   loc_16DE6		; If it's already been loaded, skip initialisation.
+		bne.s	loc_16DE6		; If it's already been loaded, skip initialisation.
 		move.l	#Map_Pause,$C(a0)        ; Load the 'PAUSE' mappings into the SST.
 		move.w	#$F0,$20(a0)             ; Set the horizontal screen position.
 		move.w	#$108,$24(a0)            ; Set the vertical screen position.
