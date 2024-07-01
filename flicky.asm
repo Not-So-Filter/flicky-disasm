@@ -85,7 +85,7 @@
 ; ======================================================================
 
 	cpu 68000
-	
+
 zeroOffsetOptimization = 0
 
 	include	"MacroSetup.asm"
@@ -167,7 +167,7 @@ loc_23E:
 loc_250:
 		btst	d0,(a1)			; Has the Z80 stopped?
 		bne.s	loc_250			; If not, loop until it has.
-		moveq	#Z80Init_End-Z80Init-1,d2	; Load instructions length.
+		moveq	#(Z80Init_End-Z80Init)-1,d2	; Load instructions length.
 loc_256:
 		move.b	(a5)+,(a0)+		; Move a byte of the first instruction into Z80 RAM.
 		dbf	d2,loc_256		; Repeat until finished.
@@ -267,7 +267,7 @@ loc_33c:
 		add.w	(a0)+,d0		; Start adding the opcode's bytes together, into d0.
 		dbf	d2,loc_33c		; Repeat for the ROM's end address (lower word).
 		dbf	d1,loc_33c		; Repeat for the ROM's end address (higher word).
-		cmp.w	Checksum.w,d0		; Does it match the checksum's header value?
+		cmp.w	(Checksum).w,d0		; Does it match the checksum's header value?
 		beq.s	loc_350			; If it does, carry on with the game.
 		bra.w	loc_3e4			; Otherwise, trap in an endless loop.
 loc_350:
@@ -732,7 +732,7 @@ loc_aca:
 		      ; TODO - ANNOTATE ME
 NemDec:				          ; $AD4
 		movem.l d0-a1/a3-a5,-(sp)        ; Store used registers onto the stack.
-		lea	loc_B5A.l,a3
+		lea	(loc_B5A).l,a3
 		lea	($C00000).l,a4           ; Set to load to the VDP.
 		bra.s	NemDec_Main              ; Run the main decompression routine.
 
@@ -740,7 +740,7 @@ NemDec:				          ; $AD4
 
 NemDectoRAM:				     ; $AE6
 		movem.l d0-a1/a3-a5,-(sp)        ; Store used registers onto the stack.
-		lea	loc_b70.l,a3
+		lea	(loc_b70).l,a3
 
 NemDec_Main:				     ; $AF0
 		lea	($FFFFE630).w,a1         ; Set RAM address to decompress to.
@@ -1527,9 +1527,20 @@ loc_1014:
 ; ======================================================================
 ; TODO - Convert to Z80 with AS
 loc_1046:
-		dc.b    $00, $80, $00, $80
-		dc.b    $00, $00, $00, $00
-		dc.b    $20
+		save
+		phase	0
+		cpu	z80
+		nop
+		add	a,b
+		nop
+		add	a,b
+		nop
+		nop
+		nop
+		nop
+		db	20h	; seems like a cut off jr nz pointer
+		dephase
+		restore
 loc_1046_End:
 		even
 
@@ -1613,7 +1624,7 @@ loc_10d6:
 loc_10dc:				        ; TODO
 		movem.l d1/a0,-(sp)              ; Store used registers onto the stack.
 		bsr.w	StoptheZ80               ; Stop the Z80.
-		lea	($A01C04).l,a0
+		lea	($A00000+word_1C04).l,a0
 		moveq	#0,d1		    ; Clear d1.
 		move.b	d1,(a0)+		 ; Clear TODO.
 		move.b	d1,(a0)+		 ; ''
@@ -1645,21 +1656,21 @@ loc_1114:
 		move.b	-$67(a0),d0
 		subq.w	#1,($FFFFFFA2).w
 		bsr.w	StoptheZ80               ; Stop the Z80.
-		tst.b	($A01C0A).l
+		tst.b	($A00000+unk_1C0A).l
 		bne.s	loc_1138
-		move.b	d0,($A01C0A).l
+		move.b	d0,($A00000+unk_1C0A).l
 		bra.s	loc_1156
 
 loc_1138:
-		tst.b	($A01C0B).l
+		tst.b	($A00000+unk_1C0B).l
 		bne.s	loc_1148
-		move.b	d0,($A01C0B).l
+		move.b	d0,($A00000+unk_1C0B).l
 		bra.s	loc_1156
 
 loc_1148:
-		tst.b	($A01C0C).l
+		tst.b	($A00000+unk_1C0C).l
 		bne.s	loc_1156
-		move.b	d0,($A01C0C).l
+		move.b	d0,($A00000+unk_1C0C).l
 loc_1156:
 		bsr.w	loc_1084		 ; Start the Z80.
 loc_115a:
@@ -1687,7 +1698,7 @@ loc_116a:
 loc_117c:
 		movem.w d1,-(sp)		 ; Store d1's value onto the stack.
 		bsr.w	StoptheZ80               ; Stop the Z80.
-		move.b	($A01C0A).l,d1           ;
+		move.b	($A00000+unk_1C0A).l,d1           ;
 		bsr.w	loc_1084		 ; Start the Z80.
 		cmp.b   d0,d1		    ; Is it the same value as d0?
 		movem.w (sp)+,d1		 ; Restore value anyway.
@@ -2029,12 +2040,12 @@ GameModeArray:
 ; ======================================================================
 
 loc_100CC:
-		jmp	SegaScreen.w               ; Jump to the Sega screen code handler.
+		jmp	(SegaScreen).w               ; Jump to the Sega screen code handler.
 
 ; ======================================================================
 
 loc_100D0:
-		jmp	loc_4dc.w		  ; Checks to see if the Sega screen is finished.
+		jmp	(loc_4dc).w		  ; Checks to see if the Sega screen is finished.
 
 ; ======================================================================
 
@@ -2049,18 +2060,18 @@ loc_100E2:
 		bsr.w	loc_113bc		; Clear TODO.
 		bsr.w	loc_110fe		; Clear TODO object RAM?
 		move.w	#$8000,($FFFFD884).w     ; Set mappings incrementer to use priority 1.
-		jmp	loc_101a8.l		; Dump some compressed graphics into VRAM.
+		jmp	(loc_101a8).l		; Dump some compressed graphics into VRAM.
 
 ; ======================================================================
 
 loc_100Fc:
 		move.w	#$200,d0		 ; Set VRAM address to be converted.
 		jsr	($FFFFFB8A).w            ; Convert it and send it to the VDP.
-		lea	loc_16e58,a0             ; Load level stuff's compressed art into a0.
+		lea	(loc_16e58).l,a0             ; Load level stuff's compressed art into a0.
 		jsr	($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
 		move.w	#$400,d0		 ; Set VRAM address to be converted.
 		jsr	($FFFFFB8A).w            ; Convert it and send it to the VDP.
-		lea	loc_187d4,a0             ; Load grabbable items' compressed art into a0.
+		lea	(loc_187d4).l,a0             ; Load grabbable items' compressed art into a0.
 		jsr	($FFFFFA82).w            ; Decompress from nemesis and load into VRAM.
 		move.b	#1,($FFFFD88E).w         ; Set palette entry increment to 1.
 loc_10126:
@@ -2075,7 +2086,7 @@ loc_10126:
 		moveq	#$30,d0		  ; Set to write to VRAM address $30.
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
 		jsr	($FFFFFB8A).w            ; Convert to address.
-		lea	loc_185fc.l,a0             ; Load start of compressed ASCII numbers/characters.
+		lea	(loc_185fc).l,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$20,d0		  ; Set to use palette entry 2 and 0.
 		add.b	($FFFFD88E).w,d0         ; Add to make it use entry 2 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
@@ -2091,7 +2102,7 @@ loc_10126:
 		move.w	#$130,d0		 ; Set to write to VRAM address $130.
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
 		jsr	($FFFFFB8A).w            ; Convert to an address.
-		lea	loc_185fc,a0             ; Load start of compressed ASCII numbers/characters.
+		lea	(loc_185fc).l,a0             ; Load start of compressed ASCII numbers/characters.
 		moveq	#$30,d0		  ; Set to use palette line 3 and 0.
 		add.b	($FFFFD88E).w,d0         ; Set to use palette line 3 and 1.
 		move.w	#(loc_185FC_End-loc_185FC)/8,d1 ; Get the length of the data, divided by 8.
@@ -2104,11 +2115,11 @@ loc_101a8:
 		lea	($C00004).l,a6           ; Load VDP control port into a6.
 		move.w	#$640,d0		 ; Set VRAM address to be converted.
 		jsr	($FFFFFB8A).w            ; Convert it and write it to the VDP.
-		lea	loc_1993e.l,a0             ; Load nemesis compressed points, Iggy, diamond and bonus points model graphics into a0.
+		lea	(loc_1993e).l,a0             ; Load nemesis compressed points, Iggy, diamond and bonus points model graphics into a0.
 		jsr	($FFFFFA82).w            ; Decompress and load into VRAM.
 		move.w	#$693,d0		 ; Set VRAM address to be converted.
 		jsr	($FFFFFB8A).w            ; Convert it and write it to the VDP.
-		lea	loc_18754.l,a0             ; Load nemesis compressed graphics source.      TODO - Possibly the exit sign?
+		lea	(loc_18754).l,a0             ; Load nemesis compressed graphics source.      TODO - Possibly the exit sign?
 		jsr	($FFFFFA82).w            ; Decompress it and load into VRAM.
 		rts		              ; Return.
 
@@ -2152,7 +2163,7 @@ loc_10CE0:
 
 loc_10CF6:
 		jsr	($FFFFFB30).w            ; Load the sound driver to the Z80.
-		lea	loc_101d4.l,a1         ; Load the Z80 pointers list into a1.
+		lea	(loc_101d4).l,a1         ; Load the Z80 pointers list into a1.
 		bsr.s	loc_10d24		; Write first set of pointers to the Z80.
 		bsr.s	loc_10d24		; And write the next set of pointers.
 		moveq	#8,d0		    ; Set to write only 8 instructions (last $00 is ignored as it is an even).
@@ -2167,14 +2178,19 @@ loc_10CF6:
 ; TODO - Convert to Z80 when using AS.
 
 loc_10d1a:
-		dc.b    $00		      ; nop
-		dc.b    $80		      ; add b
-		dc.b    $00		      ; nop
-		dc.b    $12		      ; ld (de),a
-		dc.b    $B4		      ; or h
-		dc.b    $00		      ; nop
-		dc.b    $E6, $80		 ; and $80
-		dc.b    $20, $00		 ; jr nz, $00.
+		save
+		phase	0
+		cpu	z80
+		nop
+		add	a,b
+		nop
+		ld	(de),a
+		or	h
+		nop
+		and	80h
+		jr	nz, 0Ah
+		dephase
+		restore
 
 ; ======================================================================
 
@@ -2189,7 +2205,7 @@ loc_10d24:
 loc_10d34:
 		move.l	a0,-(sp)
 		jsr	($FFFFFB36).w            ; Stop the Z80.
-		move.b	d0,($A01C09).l
+		move.b	d0,($A00000+byte_1C09).l
 		jsr	($FFFFFB3C).w            ; Start the Z80.
 		movea.l (sp)+,a0
 		rts
@@ -5908,7 +5924,7 @@ loc_12eba:
 		move.b	#1,($FFFFD2A4).w
 		move.b	#$97,d0
 		jsr	($FFFFFB36).w
-		move.b	d0,($A01C09).l
+		move.b	d0,($A00000+byte_1C09).l
 		jsr	($FFFFFB3C).w
 		move.l	(sp)+,d0
 		addq.b	#1,($FFFFD882).w
@@ -5929,7 +5945,7 @@ loc_12ee0:
 ; ======================================================================
 PauseGame:				       ; $12EF4
 		jsr	($FFFFFB36).w            ; Stop the Z80.
-		move.b	#1,($A01C10).l
+		move.b	#1,($A00000+unk_1C10).l
 		jsr	($FFFFFB3C).w            ; Start the Z80.
 		move.w	#$58,($FFFFC000).w       ; Load the pause object.
 loc_12F0A:
@@ -5938,7 +5954,7 @@ loc_12F0A:
 		btst	#7,($FFFFFF8F).w
 		beq.s	loc_12f0a
 		jsr	($FFFFFB36).w
-		move.b	#$80,($A01C10).l
+		move.b	#$80,($A00000+unk_1C10).l
 		jsr	($FFFFFB3C).w
 		clr.w	($FFFFC000).w
 		rts
@@ -5988,12 +6004,12 @@ loc_12F8C:
 
 loc_12fcc:
 		dc.w    $C0D4		    ; Write to Plane A.
-		dc.b    'BONUS'		  ; Text string.
+		dc.b    "BONUS"		  ; Text string.
 		dc.b    $00		      ; String terminator.
 
 loc_12fd4:
 		dc.w    $C0E0		    ; Write to Plane A.
-		dc.b    'ROUND'		  ; Text string.
+		dc.b    "ROUND"		  ; Text string.
 		dc.b    $00		      ; String terminator.
 
 ; ======================================================================

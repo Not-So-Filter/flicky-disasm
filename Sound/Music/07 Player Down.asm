@@ -43,11 +43,19 @@ Player_Down_FM4:
 	dc.b	nRst, $03
 	smpsModSet  $03, $01, $04, $09
 	smpsFMvoice $00
-	smpsJump    $1AEF
+	smpsJump    $1AB6
 
 ; 1AB4
 ; FM2 Data
 Player_Down_FM2:
+	smpsFMvoice $00
+	
+; 1AB6
+	dc.b	$E4, $02, $03, $02, $02, $03
+	dc.b	$BE, $0C, $C0, $BE, $C0, $B9, $80, $B9, $80, $BC, $06, $BB, $BA
+	dc.b	$B9, $B8, $B7, $B6, $B5, $B4, $B3, $B2, $B1, $B0, $AF, $AE, $AD
+	smpsStop
+
 ; FM5 Data
 Player_Down_FM5:
 ; PSG1 Data

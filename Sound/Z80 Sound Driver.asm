@@ -8,78 +8,58 @@
 ; ---------------------------------------------------------------------------
 
 	phase $1C00
+	padding off
 byte_1C00:	ds.b 1			; DATA XREF: SetupBank+9r
 byte_1C01:	ds.b 1			; DATA XREF: SetupBankr
-word_1C02:	ds.b 2			; DATA XREF: GetListOfsr
-					; DoOneSndQueue+6r
-word_1C04:	ds.b 2			; DATA XREF: RefreshTimerAr
-					; RAM:cfEA_SetUpdRateo	...
+word_1C02:	ds.w 1			; DATA XREF: GetListOfsr
+word_1C04:	ds.w 1			; DATA XREF: RefreshTimerAr
 byte_1C06:	ds.b 1			; DATA XREF: RefreshTimerBr RAM:0C46o
 byte_1C07:	ds.b 1			; DATA XREF: RAM:loc_46r RAM:0073r ...
 unk_1C08:	ds.b 1			; DATA XREF: PlaySoundID+10Fo
 byte_1C09:	ds.b 1			; DATA XREF: PlaySoundIDr
-					; PlaySoundID+D8w ...
 unk_1C0A:	ds.b 1			; DATA XREF: StopAllSound+3o
-					; DoSoundQueue+5o ...
 unk_1C0B:	ds.b 1			; DATA XREF: DoSoundQueue+Bo
 unk_1C0C:	ds.b 1			; DATA XREF: DoSoundQueue+11o
 byte_1C0D:	ds.b 1			; DATA XREF: DoPause+13r RAM:0794w ...
 byte_1C0E:	ds.b 1			; DATA XREF: RAM:079Cw
-					; DoFading:ApplyFadingr
 byte_1C0F:	ds.b 1			; DATA XREF: RAM:0799w	DoFading+Br ...
-unk_1C10:	ds.b 1			; DATA XREF: DoPauseo
+unk_1C10:	ds.b 1			; Pause flag
 byte_1C11:	ds.b 1			; DATA XREF: DoPause:loc_759r
-					; RAM:cf03_MusPausew
 byte_1C12:	ds.b 1			; DATA XREF: RefreshTimerB:ResetYMTimero
-					; ResetSpcFM3Mode+2w ...
 byte_1C13:	ds.b 1			; DATA XREF: PlaySoundID+67w DoTempoo
 byte_1C14:	ds.b 1			; DATA XREF: PlaySoundID+6Aw
-					; DoTempo+8r ...
 byte_1C15:	ds.b 1			; DATA XREF: PlaySoundID+121w
-					; PlaySoundID+93Bw
 byte_1C16:	ds.b 1			; DATA XREF: RAM:cfE2_SetCommw
 byte_1C17:	ds.b 1			; DATA XREF: DoSoundQueue+2w
 byte_1C18:	ds.b 1			; DATA XREF: DoOneSndQueue:loc_8CFr
-					; DoOneSndQueue+2Fw ...
 byte_1C19:	ds.b 1			; DATA XREF: UpdateAll+14w
-					; UpdateSFXTracks+2w ...
 byte_1C1A:	ds.b 8			; DATA XREF: GetFM3FreqPtr+8o
 byte_1C22:	ds.b 8			; DATA XREF: GetFM3FreqPtr+Co
 byte_1C2A:	ds.b 8			; DATA XREF: GetFM3FreqPtro
 byte_1C32:	ds.b 1			; DATA XREF: GetSFXChnPtrs:loc_6C2w
-word_1C33:	ds.b 2			; DATA XREF: PlaySoundID+71w
-					; PlaySoundID+90r ...
-word_1C35:	ds.b 2			; DATA XREF: PlaySoundID+77w
-					; PlaySoundID+84r ...
-word_1C37:	ds.b 2			; DATA XREF: GetFMInsPtrr
-					; PlaySoundID+5Ew ...
-word_1C39:	ds.b 2			; DATA XREF: PlaySoundID+11Dw
-					; PlaySoundID+178r
+word_1C33:	ds.w 1			; DATA XREF: PlaySoundID+71w
+word_1C35:	ds.w 1			; DATA XREF: PlaySoundID+77w
+word_1C37:	ds.w 1			; DATA XREF: GetFMInsPtrr
+word_1C39:	ds.w 1			; DATA XREF: PlaySoundID+11Dw
 byte_1C3B:	ds.b 1			; DATA XREF: PlaySoundID+12Bw
-					; PlaySoundID+155r
 		ds.b 1
 		ds.b 1
 		ds.b 1
 		ds.b 1
 byte_1C40:	ds.b 1			; DATA XREF: UpdateAll+17o
-					; PlaySoundID+7Ao ...
 		ds.b 1
 byte_1C42:	ds.b 9			; DATA XREF: RAM:0C1Eo
-byte_1C4B:	ds.b $25			; DATA XREF: DoTempo+Co
-byte_1C70:	ds.b $0F0			; DATA XREF: UpdateAll+24o DoPause+1Ao
+byte_1C4B:	ds.b $25		; DATA XREF: DoTempo+Co
+byte_1C70:	ds.b $0F0		; DATA XREF: UpdateAll+24o DoPause+1Ao
 byte_1D60:	ds.b 5			; DATA XREF: StopDrumPSG+4w
-					; DrumUpdate_Proc+1Eo
 byte_1D65:	ds.b 1			; DATA XREF: DrumUpdate_Proc+45o
 byte_1D66:	ds.b 2			; DATA XREF: DrumUpdate_Proc+54r
-byte_1D68:	ds.b $28			; DATA XREF: DrumUpdate_Proc+4Dr
-byte_1D90:	ds.b $30			; DATA XREF: PlaySoundID+B2o
-					; StopDrumPSG+Aw
-byte_1DC0:	ds.b $30			; DATA XREF: StopDrumPSG+Dw
-byte_1DF0:	ds.b $30			; DATA XREF: StopDrumPSG+7w
-					; DrumUpdate_Proc:loc_A12o
-byte_1E20:	ds.b $60			; DATA XREF: UpdateSFXTracks+15o
-					; PlaySoundID:StopSpcSFXo ...
-byte_1E80:	ds.b $17D			; DATA XREF: UpdateSFXTracks+5o
+byte_1D68:	ds.b $28		; DATA XREF: DrumUpdate_Proc+4Dr
+byte_1D90:	ds.b $30		; DATA XREF: PlaySoundID+B2o
+byte_1DC0:	ds.b $30		; DATA XREF: StopDrumPSG+Dw
+byte_1DF0:	ds.b $30		; DATA XREF: StopDrumPSG+7w
+byte_1E20:	ds.b $60		; DATA XREF: UpdateSFXTracks+15o
+byte_1E80:	ds.b $17D		; DATA XREF: UpdateSFXTracks+5o
 unk_1FFD:	ds.b 1			; DATA XREF: RAM:InitDrivero
 		ds.b 1
 byte_1FFF:	ds.b 1			; DATA XREF: RAM:003Co	RAM:0058w ...
