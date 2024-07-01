@@ -1,5 +1,5 @@
 
-	cpu z80
+	phase 1200h
 
 GeneralPtrList:	dw SndPriorities
 		dw SpcSFXPtrs
@@ -9,19 +9,15 @@ GeneralPtrList:	dw SndPriorities
 		dw SndPriorities	; actually VolEnvPtrs
 		dw 90h
 SndPriorities:	db 80h,	80h, 80h, 80h, 80h, 80h, 80h, 80h, 80h,	80h, 80h
-					; DATA XREF: RAM:GeneralPtrListo
-					; RAM:1208o ...
 		db 80h,	80h, 80h, 80h, 80h, 80h, 80h, 80h, 80h,	80h, 80h
 		db 80h,	80h, 80h, 80h, 80h, 80h, 80h, 80h, 80h,	70h, 80h
 		db 80h,	80h, 80h, 80h, 70h, 70h, 70h, 00h, 00h,	80h, 10h
 		db 20h,	70h, 00h, 00h, 00h, 00h, 00h, 00h, 70h,	68h, 78h
 		db 78h,	80h, 80h, 80h, 80h, 80h, 80h, 80h
 MusicPtrs:	dw byte_125B, byte_13BF, byte_14FB, byte_1771, byte_187D
-					; DATA XREF: RAM:1204o
 		dw 0
 		dw byte_1A4B
 byte_125B:	db 74h,	13h, 7,	0, 2, 0, 73h, 13h, 0, 0, 84h, 12h, 0F4h
-					; DATA XREF: RAM:MusicPtrso
 		db 6, 0B0h, 12h, 0F4h, 8, 0F7h,	12h, 0F4h, 20h,	2Ch, 13h
 		db 0F4h, 20h, 7Dh, 12h,	0F4h, 10h, 0AEh, 12h, 0F4h, 20h
 		db 80h,	2, 0E1h, 8, 0F6h, 88h, 12h, 0EAh, 4Eh, 2, 0E6h
@@ -56,7 +52,6 @@ byte_125B:	db 74h,	13h, 7,	0, 2, 0, 73h, 13h, 0, 0, 84h, 12h, 0F4h
 		db 32h,	11h, 32h, 55h, 9Bh, 70h, 0D3h, 2, 1, 1,	3, 3, 1
 		db 3, 0, 15h, 0Fh, 0Fh,	0A0h, 21h, 47h,	21h, 80h
 byte_13BF:	db 65h,	14h, 7,	0, 2, 0, 64h, 14h, 0, 20h, 0E6h, 13h, 0F4h
-					; DATA XREF: RAM:MusicPtrso
 		db 6, 17h, 14h,	0DCh, 17h, 3Ch,	14h, 0,	17h, 0E1h, 13h
 		db 0, 20h, 10h,	14h, 0,	20h, 37h, 14h, 0F4h, 4,	0EFh, 3
 		db 0F6h, 0F2h, 13h, 0EAh, 68h, 2, 0E6h,	0EFh, 1, 0E4h
@@ -86,7 +81,6 @@ byte_13BF:	db 65h,	14h, 7,	0, 2, 0, 64h, 14h, 0, 20h, 0E6h, 13h, 0F4h
 		db 9Fh,	0DFh, 9Fh, 9Fh,	0Ch, 16h, 19h, 16h, 7, 6, 6, 8
 		db 23h,	12h, 11h, 54h, 1Ch, 1Ah, 36h, 80h
 byte_14FB:	db 0Dh,	17h, 7,	0, 2, 0, 0Ch, 17h, 0, 20h, 29h,	15h, 0F4h
-					; DATA XREF: RAM:MusicPtrso
 		db 10h,	8Bh, 15h, 0, 18h, 26h, 16h, 0F4h, 1Ch, 0A9h, 16h
 		db 0F4h, 0Ch, 1Dh, 15h,	0F4h, 18h, 24h,	16h, 0F4h, 18h
 		db 80h,	3, 0F0h, 0Ch, 1, 4, 8, 0EFh, 0,	0F6h, 2Fh, 15h
@@ -149,7 +143,6 @@ byte_14FB:	db 0Dh,	17h, 7,	0, 2, 0, 0Ch, 17h, 0, 20h, 29h,	15h, 0F4h
 		db 0Ah,	0, 0Ah,	0, 0, 0, 0, 0Fh, 1Fh, 0Fh, 1Fh,	16h, 90h
 		db 17h,	90h
 byte_1771:	db 0, 18h, 7, 3, 2, 0, 0FFh, 17h, 0, 20h, 0AFh,	17h, 0F4h
-					; DATA XREF: RAM:MusicPtrso
 		db 10h,	0D2h, 17h, 0F4h, 10h, 0E6h, 17h, 0F4h, 10h, 0A5h
 		db 17h,	0F4h, 16h, 0D0h, 17h, 0F4h, 10h, 0D7h, 17h, 0F4h
 		db 10h,	0FEh, 17h, 0F4h, 8, 8, 0, 0FEh,	17h, 0F4h, 8, 0
@@ -174,7 +167,6 @@ byte_1771:	db 0, 18h, 7, 3, 2, 0, 0FFh, 17h, 0, 20h, 0AFh,	17h, 0F4h
 		db 9, 10h, 6, 1Fh, 0, 10h, 0, 1Fh, 3Fh,	3Fh, 3Fh, 10h
 		db 80h,	80h, 80h
 byte_187D:	db 0CEh, 19h, 7, 0, 2, 0, 0CDh,	19h, 0,	20h, 0ABh, 18h
-					; DATA XREF: RAM:MusicPtrso
 		db 0F4h, 7, 0F2h, 18h, 0E8h, 17h, 56h, 19h, 0F4h, 10h
 		db 8Ah,	19h, 0E8h, 1Bh,	9Fh, 18h, 0F4h,	10h, 0C5h, 19h
 		db 0F4h, 10h, 80h, 3, 0F0h, 3, 1, 4, 5,	0EFh, 0, 0F6h
@@ -219,7 +211,6 @@ byte_187D:	db 0CEh, 19h, 7, 0, 2, 0, 0CDh,	19h, 0,	20h, 0ABh, 18h
 		db 63h,	32h, 0DFh, 54h,	0D0h, 8Fh, 9, 7, 0Bh, 4, 3, 0
 		db 0, 0, 0EFh, 0FFh, 2Fh, 0Fh, 28h, 29h, 1Ch, 80h
 byte_1A4B:	db 0E0h, 1Ah, 6, 2, 2, 0, 0DFh,	1Ah, 0,	0, 81h,	1Ah, 1
-					; DATA XREF: RAM:1259o
 		db 0, 0B4h, 1Ah, 0FFh, 8, 75h, 1Ah, 0F5h, 10h, 0A8h, 1Ah
 		db 0F5h, 10h, 0D7h, 1Ah, 0F5h, 20h, 0DEh, 1Ah, 0F5h, 8
 		db 1, 1, 0DEh, 1Ah, 0F5h, 8, 0,	2, 80h,	5, 0F0h, 3, 1
@@ -238,4 +229,5 @@ byte_1A4B:	db 0E0h, 1Ah, 6, 2, 2, 0, 0DFh,	1Ah, 0,	0, 81h,	1Ah, 1
 		db 4, 1Fh, 1Fh,	1Fh, 1Fh, 10h, 0Fh, 9, 8, 7, 0,	0, 0, 3Fh
 		db 0Fh,	0Fh, 4Fh, 20h, 20h, 20h, 80h, 10h, 4, 2, 8, 4
 		db 1Fh,	1Fh, 1Fh, 1Fh, 10h, 0Fh, 9, 8, 7, 0, 0,	0, 3Fh
-		db 0Fh,	0Fh, 4Fh, 20h, 20h, 20h, 80h, 0, 23h
+		db 0Fh,	0Fh, 4Fh, 20h, 20h, 20h, 80h, 0
+	dephase

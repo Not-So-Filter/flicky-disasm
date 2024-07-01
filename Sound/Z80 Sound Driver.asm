@@ -7,6 +7,87 @@
 ;	Differences (a few pointers and	FM drums) are noted.
 ; ---------------------------------------------------------------------------
 
+	phase $1C00
+byte_1C00:	ds.b 1			; DATA XREF: SetupBank+9r
+byte_1C01:	ds.b 1			; DATA XREF: SetupBankr
+word_1C02:	ds.b 2			; DATA XREF: GetListOfsr
+					; DoOneSndQueue+6r
+word_1C04:	ds.b 2			; DATA XREF: RefreshTimerAr
+					; RAM:cfEA_SetUpdRateo	...
+byte_1C06:	ds.b 1			; DATA XREF: RefreshTimerBr RAM:0C46o
+byte_1C07:	ds.b 1			; DATA XREF: RAM:loc_46r RAM:0073r ...
+unk_1C08:	ds.b 1			; DATA XREF: PlaySoundID+10Fo
+byte_1C09:	ds.b 1			; DATA XREF: PlaySoundIDr
+					; PlaySoundID+D8w ...
+unk_1C0A:	ds.b 1			; DATA XREF: StopAllSound+3o
+					; DoSoundQueue+5o ...
+unk_1C0B:	ds.b 1			; DATA XREF: DoSoundQueue+Bo
+unk_1C0C:	ds.b 1			; DATA XREF: DoSoundQueue+11o
+byte_1C0D:	ds.b 1			; DATA XREF: DoPause+13r RAM:0794w ...
+byte_1C0E:	ds.b 1			; DATA XREF: RAM:079Cw
+					; DoFading:ApplyFadingr
+byte_1C0F:	ds.b 1			; DATA XREF: RAM:0799w	DoFading+Br ...
+unk_1C10:	ds.b 1			; DATA XREF: DoPauseo
+byte_1C11:	ds.b 1			; DATA XREF: DoPause:loc_759r
+					; RAM:cf03_MusPausew
+byte_1C12:	ds.b 1			; DATA XREF: RefreshTimerB:ResetYMTimero
+					; ResetSpcFM3Mode+2w ...
+byte_1C13:	ds.b 1			; DATA XREF: PlaySoundID+67w DoTempoo
+byte_1C14:	ds.b 1			; DATA XREF: PlaySoundID+6Aw
+					; DoTempo+8r ...
+byte_1C15:	ds.b 1			; DATA XREF: PlaySoundID+121w
+					; PlaySoundID+93Bw
+byte_1C16:	ds.b 1			; DATA XREF: RAM:cfE2_SetCommw
+byte_1C17:	ds.b 1			; DATA XREF: DoSoundQueue+2w
+byte_1C18:	ds.b 1			; DATA XREF: DoOneSndQueue:loc_8CFr
+					; DoOneSndQueue+2Fw ...
+byte_1C19:	ds.b 1			; DATA XREF: UpdateAll+14w
+					; UpdateSFXTracks+2w ...
+byte_1C1A:	ds.b 8			; DATA XREF: GetFM3FreqPtr+8o
+byte_1C22:	ds.b 8			; DATA XREF: GetFM3FreqPtr+Co
+byte_1C2A:	ds.b 8			; DATA XREF: GetFM3FreqPtro
+byte_1C32:	ds.b 1			; DATA XREF: GetSFXChnPtrs:loc_6C2w
+word_1C33:	ds.b 2			; DATA XREF: PlaySoundID+71w
+					; PlaySoundID+90r ...
+word_1C35:	ds.b 2			; DATA XREF: PlaySoundID+77w
+					; PlaySoundID+84r ...
+word_1C37:	ds.b 2			; DATA XREF: GetFMInsPtrr
+					; PlaySoundID+5Ew ...
+word_1C39:	ds.b 2			; DATA XREF: PlaySoundID+11Dw
+					; PlaySoundID+178r
+byte_1C3B:	ds.b 1			; DATA XREF: PlaySoundID+12Bw
+					; PlaySoundID+155r
+		ds.b 1
+		ds.b 1
+		ds.b 1
+		ds.b 1
+byte_1C40:	ds.b 1			; DATA XREF: UpdateAll+17o
+					; PlaySoundID+7Ao ...
+		ds.b 1
+byte_1C42:	ds.b 9			; DATA XREF: RAM:0C1Eo
+byte_1C4B:	ds.b $25			; DATA XREF: DoTempo+Co
+byte_1C70:	ds.b $0F0			; DATA XREF: UpdateAll+24o DoPause+1Ao
+byte_1D60:	ds.b 5			; DATA XREF: StopDrumPSG+4w
+					; DrumUpdate_Proc+1Eo
+byte_1D65:	ds.b 1			; DATA XREF: DrumUpdate_Proc+45o
+byte_1D66:	ds.b 2			; DATA XREF: DrumUpdate_Proc+54r
+byte_1D68:	ds.b $28			; DATA XREF: DrumUpdate_Proc+4Dr
+byte_1D90:	ds.b $30			; DATA XREF: PlaySoundID+B2o
+					; StopDrumPSG+Aw
+byte_1DC0:	ds.b $30			; DATA XREF: StopDrumPSG+Dw
+byte_1DF0:	ds.b $30			; DATA XREF: StopDrumPSG+7w
+					; DrumUpdate_Proc:loc_A12o
+byte_1E20:	ds.b $60			; DATA XREF: UpdateSFXTracks+15o
+					; PlaySoundID:StopSpcSFXo ...
+byte_1E80:	ds.b $17D			; DATA XREF: UpdateSFXTracks+5o
+unk_1FFD:	ds.b 1			; DATA XREF: RAM:InitDrivero
+		ds.b 1
+byte_1FFF:	ds.b 1			; DATA XREF: RAM:003Co	RAM:0058w ...
+	dephase
+	!org	Z80SoundDriver
+
+	save
+	phase 0
 	cpu z80
 
 DrumHeader	macro ptr,trans,vol,mod,inst ;	(sizeof=0x6)
@@ -55,7 +136,7 @@ WriteFMI:
 		ld	(4000h), a
 		rst	WaitForYM
 		ld	a, c
-		jp	loc_4B2
+		jp	YMRegister1
 ; End of function WriteFMI
 
 
@@ -934,14 +1015,14 @@ GetFMInsPtr:
 JumpToInsData:
 		xor	a
 		or	b
-		jr	z, locret_4A1
+		jr	z, .finished
 		ld	de, 25
 
-loc_49E:
+.loop:
 		add	hl, de
-		djnz	loc_49E
+		djnz	.loop
 
-locret_4A1:
+.finished:
 		ret
 ; End of function JumpToInsData
 
@@ -957,7 +1038,7 @@ WriteFMIorII:
 		ret
 ; ---------------------------------------------------------------------------
 
-loc_4B2:
+YMRegister1:
 		ld	(4001h), a
 		ret
 ; ---------------------------------------------------------------------------
@@ -1789,9 +1870,9 @@ loc_9BE:
 		push	de
 		ld	hl, byte_1D60	; BGM Channel FM6 (actually FM3	here)
 		bit	2, (hl)
-		jr	nz, loc_A12
+		jr	nz, zloc_A12
 		and	0Fh
-		jr	z, loc_A12
+		jr	z, zloc_A12
 		ex	af, af'
 		call	DoNoteOff
 		ex	af, af'
@@ -1823,7 +1904,7 @@ loc_9BE:
 		ld	(ix+6),	e
 		call	ResetSpcFM3Mode
 
-loc_A12:
+zloc_A12:
 		ld	hl, byte_1DF0
 		bit	2, (hl)
 		jr	nz, loc_A3F
@@ -1980,19 +2061,49 @@ cfMetaCoordFlag:
 		ld	a, (de)
 		jp	(hl)
 ; ---------------------------------------------------------------------------
-cfPtrTable:	dw cfE0_Pan, cfE1_Detune, cfE2_SetComm,	cfE3_SilenceTrk
-		dw cfE4_PanAnim, cfE5_ChgPFMVol, cfE6_ChgFMVol,	cfE7_Hold
-		dw cfE8_NoteStop, cfE9_SetLFO, cfEA_SetUpdRate,	cfEB_ChgUpdRate
-		dw cfEC_ChgPSGVol, cfED_FMChnWrite, cfEE_FM1Write, cfEF_SetIns
-		dw cfF0_ModSetup, cfF1_ModTypePFM, cfF2_StopTrk, cfF3_PSGNoise
-		dw cfF4_ModType, cfF5_SetPSGIns, cfF6_GoTo, cfF7_Loop
-		dw cfF8_GoSub, cfF9_Return, cfFA_TickMult, cfFB_ChgTransp
-		dw cfFC_PitchSlide, cfFD_RawFrqMode, cfFE_SpcFM3Mode, cfMetaCoordFlag
-cfMetaPtrTable:	dw cf00_TimingMode, cf01_SetTempo, cf02_PlaySnd, cf03_MusPause
-		dw cf04_CopyMem, cf05_TickMulAll, cf06_SSGEG, cf07_FMVolEnv
+cfPtrTable:	dw cfE0_Pan
+		dw cfE1_Detune
+		dw cfE2_SetComm
+		dw cfE3_SilenceTrk
+		dw cfE4_PanAnim
+		dw cfE5_ChgPFMVol
+		dw cfE6_ChgFMVol
+		dw cfE7_Hold
+		dw cfE8_NoteStop
+		dw cfE9_SetLFO
+		dw cfEA_SetUpdRate
+		dw cfEB_ChgUpdRate
+		dw cfEC_ChgPSGVol
+		dw cfED_FMChnWrite
+		dw cfEE_FM1Write
+		dw cfEF_SetIns
+		dw cfF0_ModSetup
+		dw cfF1_ModTypePFM
+		dw cfF2_StopTrk
+		dw cfF3_PSGNoise
+		dw cfF4_ModType
+		dw cfF5_SetPSGIns
+		dw cfF6_GoTo
+		dw cfF7_Loop
+		dw cfF8_GoSub
+		dw cfF9_Return
+		dw cfFA_TickMult
+		dw cfFB_ChgTransp
+		dw cfFC_PitchSlide
+		dw cfFD_RawFrqMode
+		dw cfFE_SpcFM3Mode
+		dw cfMetaCoordFlag
+cfMetaPtrTable:	dw cf00_TimingMode
+		dw cf01_SetTempo
+		dw cf02_PlaySnd
+		dw cf03_MusPause
+		dw cf04_CopyMem
+		dw cf05_TickMulAll
+		dw cf06_SSGEG
+		dw cf07_FMVolEnv
 ; ---------------------------------------------------------------------------
 
-cf06_SSGEG:				; DATA XREF: RAM:cfMetaPtrTableo
+cf06_SSGEG:
 		ld	(ix+18h), 80h
 		ld	(ix+19h), e
 		ld	(ix+1Ah), d
@@ -2000,11 +2111,11 @@ cf06_SSGEG:				; DATA XREF: RAM:cfMetaPtrTableo
 ; =============== S U B	R O U T	I N E =======================================
 
 
-SendSSGEG:				; CODE XREF: PlaySoundID:loc_EC0p
+SendSSGEG:
 		ld	hl, SSGEG_Ops
 		ld	b, 4
 
-loc_C0E:				; CODE XREF: SendSSGEG+Bj
+loc_C0E:
 		ld	a, (de)
 		inc	de
 		ld	c, a
@@ -2018,13 +2129,13 @@ loc_C0E:				; CODE XREF: SendSSGEG+Bj
 
 ; ---------------------------------------------------------------------------
 
-cf05_TickMulAll:			; DATA XREF: RAM:cfMetaPtrTableo
+cf05_TickMulAll:
 		exx
 		ld	b, 0Ah
 		ld	de, 30h
 		ld	hl, byte_1C42
 
-loc_C21:				; CODE XREF: RAM:0C23j
+loc_C21:
 		ld	(hl), a
 		add	hl, de
 		djnz	loc_C21
@@ -2032,12 +2143,12 @@ loc_C21:				; CODE XREF: RAM:0C23j
 		ret
 ; ---------------------------------------------------------------------------
 
-cf00_TimingMode:			; DATA XREF: RAM:cfMetaPtrTableo
+cf00_TimingMode:
 		ld	(byte_1C07), a	; set 1C07, the	Timing Mode
 		ret
 ; ---------------------------------------------------------------------------
 
-cfEA_SetUpdRate:			; DATA XREF: RAM:cfPtrTableo
+cfEA_SetUpdRate:
 		ld	hl, word_1C04	; 1C04/1C05 = YM2612 Timer A value (Music Tempo)
 		ex	de, hl		; (sound driver	update rate)
 		ldi
@@ -2048,7 +2159,7 @@ cfEA_SetUpdRate:			; DATA XREF: RAM:cfPtrTableo
 		ret
 ; ---------------------------------------------------------------------------
 
-cfEB_ChgUpdRate:			; DATA XREF: RAM:cfPtrTableo
+cfEB_ChgUpdRate:
 		ex	de, hl
 		ld	c, (hl)
 		inc	hl
@@ -2065,14 +2176,14 @@ cfEB_ChgUpdRate:			; DATA XREF: RAM:cfPtrTableo
 		ret
 ; ---------------------------------------------------------------------------
 
-cf02_PlaySnd:				; DATA XREF: RAM:cfMetaPtrTableo
+cf02_PlaySnd:
 		push	ix
 		call	PlaySnd_JumpIn	; play Sound ID	from parameter A
 		pop	ix
 		ret
 ; ---------------------------------------------------------------------------
 
-cf03_MusPause:				; DATA XREF: RAM:cfMetaPtrTableo
+cf03_MusPause:
 		ld	(byte_1C11), a	; 1C11 - Music is paused
 		or	a
 		jr	z, loc_C77	; 00 - unpause,	so jump
@@ -2082,7 +2193,7 @@ cf03_MusPause:				; DATA XREF: RAM:cfMetaPtrTableo
 		ld	b, 0Ah		; 10 music tracks
 		ld	de, 30h
 
-loc_C66:				; CODE XREF: RAM:0C6Fj
+loc_C66:
 		res	7, (ix+0)	; disable channel
 		call	SendNoteOff	; turn FM note off
 		add	ix, de
@@ -2092,14 +2203,14 @@ loc_C66:				; CODE XREF: RAM:0C6Fj
 		jp	SilencePSG
 ; ---------------------------------------------------------------------------
 
-loc_C77:				; CODE XREF: RAM:0C58j
+loc_C77:
 		push	ix
 		push	de
 		ld	ix, byte_1C40	; 1C40 - Music Tracks
 		ld	b, 0Ah		; 10 music tracks
 		ld	de, 30h
 
-loc_C83:				; CODE XREF: RAM:0C89j
+loc_C83:
 		set	7, (ix+0)	; re-enable channel
 		add	ix, de
 		djnz	loc_C83
@@ -2544,7 +2655,7 @@ loc_EA0:				; CODE XREF: PlaySoundID+986j
 		or	a
 		jp	p, loc_EAC
 		call	SetInsFromSong
-		jr	loc_EC0
+		jr	zloc_EC0
 ; ---------------------------------------------------------------------------
 
 loc_EAC:				; CODE XREF: PlaySoundID+999j
@@ -2557,7 +2668,7 @@ loc_EAC:				; CODE XREF: PlaySoundID+999j
 		ld	e, (ix+19h)
 		ld	d, (ix+1Ah)
 
-loc_EC0:				; CODE XREF: PlaySoundID+99Fj
+zloc_EC0:				; CODE XREF: PlaySoundID+99Fj
 		call	SendSSGEG
 
 loc_EC3:				; CODE XREF: PlaySoundID+94Dj
@@ -2678,7 +2789,7 @@ loc_F3C:				; CODE XREF: UpdateTrack+DF5j
 		ld	a, (ix+8)
 		or	a
 		ld	c, 0
-		jr	z, loc_F70
+		jr	z, zloc_F70
 		dec	a
 		ld	c, 0Ah
 		ld	b, 80h
@@ -2686,7 +2797,7 @@ loc_F3C:				; CODE XREF: UpdateTrack+DF5j
 		call	DoPSGVolEnv
 		ld	c, a
 
-loc_F70:				; CODE XREF: UpdateTrack+E29j
+zloc_F70:				; CODE XREF: UpdateTrack+E29j
 		bit	4, (ix+0)
 		ret	nz
 		ld	a, (ix+6)
@@ -2792,86 +2903,5 @@ SilencePSGChn:				; CODE XREF: GetSFXChnPtrs+Bp
 		ret
 ; End of function SilencePSGChn
 
-; ---------------------------------------------------------------------------
-
-	phase 1C00h
-byte_1C00:	ds 1			; DATA XREF: SetupBank+9r
-byte_1C01:	ds 1			; DATA XREF: SetupBankr
-word_1C02:	ds 2			; DATA XREF: GetListOfsr
-					; DoOneSndQueue+6r
-word_1C04:	ds 2			; DATA XREF: RefreshTimerAr
-					; RAM:cfEA_SetUpdRateo	...
-byte_1C06:	ds 1			; DATA XREF: RefreshTimerBr RAM:0C46o
-byte_1C07:	ds 1			; DATA XREF: RAM:loc_46r RAM:0073r ...
-unk_1C08:	ds 1			; DATA XREF: PlaySoundID+10Fo
-byte_1C09:	ds 1			; DATA XREF: PlaySoundIDr
-					; PlaySoundID+D8w ...
-unk_1C0A:	ds 1			; DATA XREF: StopAllSound+3o
-					; DoSoundQueue+5o ...
-unk_1C0B:	ds 1			; DATA XREF: DoSoundQueue+Bo
-unk_1C0C:	ds 1			; DATA XREF: DoSoundQueue+11o
-byte_1C0D:	ds 1			; DATA XREF: DoPause+13r RAM:0794w ...
-byte_1C0E:	ds 1			; DATA XREF: RAM:079Cw
-					; DoFading:ApplyFadingr
-byte_1C0F:	ds 1			; DATA XREF: RAM:0799w	DoFading+Br ...
-unk_1C10:	ds 1			; DATA XREF: DoPauseo
-byte_1C11:	ds 1			; DATA XREF: DoPause:loc_759r
-					; RAM:cf03_MusPausew
-byte_1C12:	ds 1			; DATA XREF: RefreshTimerB:ResetYMTimero
-					; ResetSpcFM3Mode+2w ...
-byte_1C13:	ds 1			; DATA XREF: PlaySoundID+67w DoTempoo
-byte_1C14:	ds 1			; DATA XREF: PlaySoundID+6Aw
-					; DoTempo+8r ...
-byte_1C15:	ds 1			; DATA XREF: PlaySoundID+121w
-					; PlaySoundID+93Bw
-byte_1C16:	ds 1			; DATA XREF: RAM:cfE2_SetCommw
-byte_1C17:	ds 1			; DATA XREF: DoSoundQueue+2w
-byte_1C18:	ds 1			; DATA XREF: DoOneSndQueue:loc_8CFr
-					; DoOneSndQueue+2Fw ...
-byte_1C19:	ds 1			; DATA XREF: UpdateAll+14w
-					; UpdateSFXTracks+2w ...
-byte_1C1A:	ds 8			; DATA XREF: GetFM3FreqPtr+8o
-byte_1C22:	ds 8			; DATA XREF: GetFM3FreqPtr+Co
-byte_1C2A:	ds 8			; DATA XREF: GetFM3FreqPtro
-byte_1C32:	ds 1			; DATA XREF: GetSFXChnPtrs:loc_6C2w
-word_1C33:	ds 2			; DATA XREF: PlaySoundID+71w
-					; PlaySoundID+90r ...
-word_1C35:	ds 2			; DATA XREF: PlaySoundID+77w
-					; PlaySoundID+84r ...
-word_1C37:	ds 2			; DATA XREF: GetFMInsPtrr
-					; PlaySoundID+5Ew ...
-word_1C39:	ds 2			; DATA XREF: PlaySoundID+11Dw
-					; PlaySoundID+178r
-byte_1C3B:	ds 1			; DATA XREF: PlaySoundID+12Bw
-					; PlaySoundID+155r
-		ds 1
-		ds 1
-		ds 1
-		ds 1
-byte_1C40:	ds 1			; DATA XREF: UpdateAll+17o
-					; PlaySoundID+7Ao ...
-		ds 1
-byte_1C42:	ds 9			; DATA XREF: RAM:0C1Eo
-byte_1C4B:	ds 25h			; DATA XREF: DoTempo+Co
-byte_1C70:	ds 0F0h			; DATA XREF: UpdateAll+24o DoPause+1Ao
-byte_1D60:	ds 5			; DATA XREF: StopDrumPSG+4w
-					; DrumUpdate_Proc+1Eo
-byte_1D65:	ds 1			; DATA XREF: DrumUpdate_Proc+45o
-byte_1D66:	ds 2			; DATA XREF: DrumUpdate_Proc+54r
-byte_1D68:	ds 28h			; DATA XREF: DrumUpdate_Proc+4Dr
-byte_1D90:	ds 30h			; DATA XREF: PlaySoundID+B2o
-					; StopDrumPSG+Aw
-byte_1DC0:	ds 30h			; DATA XREF: StopDrumPSG+Dw
-byte_1DF0:	ds 30h			; DATA XREF: StopDrumPSG+7w
-					; DrumUpdate_Proc:loc_A12o
-byte_1E20:	ds 60h			; DATA XREF: UpdateSFXTracks+15o
-					; PlaySoundID:StopSpcSFXo ...
-byte_1E80:	ds 17Dh			; DATA XREF: UpdateSFXTracks+5o
-unk_1FFD:	ds 1			; DATA XREF: RAM:InitDrivero
-		ds 1
-byte_1FFF:	ds 1			; DATA XREF: RAM:003Co	RAM:0058w ...
-	dephase
-; end of 'RAM'
-
-
-		end
+		restore
+		dephase
