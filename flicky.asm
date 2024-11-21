@@ -89,6 +89,7 @@
 zeroOffsetOptimization = 0
 
 	include	"MacroSetup.asm"
+	include	"Macros.asm"
 
 StartofROM:
 Vectors:
@@ -2126,13 +2127,13 @@ loc_101a8:
 ; ======================================================================
 
 loc_101d4:
-		dc.w    loc_101E0_End-loc_101E0  ; d0 - Size of data in bytes ($1C8 in this case).
-		dc.w    $1000		    ; d1 - Relative offset in Z80 RAM ($A00000 + $XXXX)
-		dc.w    loc_101E0&$FFFF          ; a0 - Data location.
+		dc.w	loc_101E0_End-loc_101E0  ; d0 - Size of data in bytes ($1C8 in this case).
+		dc.w	$1000		    ; d1 - Relative offset in Z80 RAM ($A00000 + $XXXX)
+		dc.w	loc_101E0&$FFFF          ; a0 - Data location.
 
-		dc.w    loc_103A8_End-loc_103A8  ; d0 - Size of data in bytes.
-		dc.w    $1200		    ; d1 - Relative offset in Z80 RAM ($A00000 + $XXXX)
-		dc.w    loc_103A8&$FFFF          ; a0 - Data location.
+		dc.w	loc_103A8_End-loc_103A8  ; d0 - Size of data in bytes.
+		dc.w	$1200		    ; d1 - Relative offset in Z80 RAM ($A00000 + $XXXX)
+		dc.w	loc_103A8&$FFFF          ; a0 - Data location.
 
 ; ----------------------------------------------------------------------
 ; Sound effects pointers. TODO - Convert when using AS!
@@ -3942,7 +3943,7 @@ loc_11b60:
 		bsr.w	loc_10F24		; Get a VDP command in d5.
 		moveq	#2,d7		    ; Set to draw three tiles across.
 		moveq	#2,d6		    ; Set to draw three tiles down.
-		lea	OpenDoorMaps.l,a6          ; Load the open door plane mappings into a6.
+		lea	(OpenDoorMaps).l,a6          ; Load the open door plane mappings into a6.
 		bsr.w	loc_10F70		; Write onto the screen.
 		rts		              ; Return.
 
@@ -3959,10 +3960,10 @@ loc_11b86:
 		bsr.w	loc_10F24		; Output a VRAM address into d5.
 		moveq	#2,d7		    ; Set to write 3 tiles across.
 		moveq	#0,d6		    ; Set to write 1 tile down.
-		lea	FlickySignMaps.l,a6        ; Load the Flicky sign mappings into a6.
+		lea	(FlickySignMaps).l,a6        ; Load the Flicky sign mappings into a6.
 		btst	#7,($A10001).l           ; Is the console a domestic MD?
 		beq.s	loc_11bbc		; If it is, branch.
-		lea	ExitSignMaps.l,a6          ; Load the exit sign mappings into a6.
+		lea	(ExitSignMaps).l,a6          ; Load the exit sign mappings into a6.
 loc_11bbc:
 		bsr.w	loc_10F70		; Write onto the screen.
 		rts		              ; Return.
@@ -4106,7 +4107,7 @@ loc_11cb8:
 
 loc_11cca:
 		lea	loc_11cd4(pc),a1
-		jmp	loc_11d38.l
+		jmp	(loc_11d38).l
 
 ; ----------------------------------------------------------------------
 
@@ -4122,7 +4123,7 @@ loc_11cd4:
 
 loc_11ce6:
 		lea	loc_11cf0(pc),a1
-		jmp	loc_11d38.l
+		jmp	(loc_11d38).l
 
 ; ----------------------------------------------------------------------
 
@@ -4143,7 +4144,7 @@ loc_11d06:
 
 loc_11D18:
 		lea	loc_11D22(pc),a1
-		jmp	loc_11d38.l
+		jmp	(loc_11d38).l
 
 ; ----------------------------------------------------------------------
 ; TODO
@@ -4250,13 +4251,13 @@ loc_11e06:
 loc_11E18:
 		bsr.w	WriteASCIIString         ; Write onto the screen.
 loc_11E1C:
-		lea	Map_1Player,a6           ; Load the '1P' mappings into a6.
+		lea	(Map_1Player).l,a6           ; Load the '1P' mappings into a6.
 		moveq	#1,d7		    ; Set to write 2 tiles horizontally.
 		moveq	#0,d6		    ; Set to write 1 tile vertically.
 		moveq	#0,d5		    ; Clear d5, as the VRAM address is held here.
 		move.w	#$C048,d5		; Set as VRAM address to be converted.
 		bsr.w	PlaneMaptoVRAM           ; Write onto the screen.
-		lea	Map_TopIcon,a6           ; Load the 'TOP' mappings into a6.
+		lea	(Map_TopIcon).l,a6           ; Load the 'TOP' mappings into a6.
 		moveq	#2,d7		    ; Set to write 3 tiles horizontally.
 		moveq	#0,d6		    ; Set to write 1 tile vertically.
 		moveq	#0,d5		    ; Clear d5, as the VRAM address is held here.
@@ -4345,17 +4346,17 @@ loc_11F02:
 ; Japanese result screen map text.
 loc_11f04:
 		dc.w    $C14A		    ; VRAM address to write to.
-		dc.b    'GAME TIME'              ; Mappings text.
+		dc.b    "GAME TIME"              ; Mappings text.
 		dc.b    $00		      ; String terminator.
 
 loc_11f10:
 		dc.w    $C164		    ; VRAM address to write to.
-		dc.b    'MIN.  SEC.'             ; Mappings text.
+		dc.b    "MIN.  SEC."             ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_11f1e:
 		dc.w    $C24A		    ; VRAM address to write to.
-		dc.b    'TIME BONUS'             ; Mappings text.
+		dc.b    "TIME BONUS"             ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 ; ----------------------------------------------------------------------
@@ -4363,34 +4364,34 @@ loc_11f1e:
 
 loc_11F2C:
 		dc.w    $C272		    ; VRAM address to write to.
-		dc.b    'PTS.'		   ; Mappings text.
+		dc.b    "PTS."		   ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_11f34:
 		dc.w    $C268		    ; VRAM address to write to.
-		dc.b    'NO BONUS'               ; Mappings text.
+		dc.b    "NO BONUS"               ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 ; ----------------------------------------------------------------------
 ; English result screen map text.
 loc_11F40:
 		dc.w    $C148		    ; VRAM address to write to.
-		dc.b    'ROUND TIME'             ; Mappings text.
+		dc.b    "ROUND TIME"             ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_11F4E:
 		dc.w    $C162		    ; VRAM address to write to.
-		dc.b    'MIN.'		   ; Mappings text.
+		dc.b    "MIN."		   ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_11F56:
 		dc.w    $C172		    ; VRAM address to write to.
-		dc.b    'SEC.'		   ; Mappings text.
+		dc.b    "SEC."		   ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_11f5e:
 		dc.w    $C248		    ; VRAM address to write to.
-		dc.b    'TIME BONUS'             ; Mappings text.
+		dc.b    "TIME BONUS"             ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 ; ----------------------------------------------------------------------
@@ -4435,7 +4436,7 @@ TitleScreen_Load:				; $11FB0
 		jsr	($FFFFFA82).w            ; Decompress and load into VRAM.
 		clr.b	($FFFFD88E).w            ; Clear palette entry increment.
 		bsr.w	loc_10126		; Reload the ASCII art.
-		lea	Pal_Main.l,a5              ; Load the main palette source into a5.
+		lea	(Pal_Main).l,a5              ; Load the main palette source into a5.
 		jsr	($FFFFFBBA).w            ; Decode and load into the appropriate position in the palette buffer.
 		lea	Pal_TitleScreen(pc),a0   ; Load the title screen palette into a0.
 		lea	($FFFFF840).w,a1         ; Load buffer space for the last palette line.
@@ -4512,48 +4513,48 @@ Map_EngTitle:				    ; $1209E
 
 loc_120b6:
 		dc.w    $C29C		    ; VRAM address to write to.
-		dc.b    'CAST'		   ; Mappings text.
+		dc.b    "CAST"		   ; Mappings text.
 		dc.w    0		    ; Padding.
 
 loc_120BE:
 		dc.w    $C310		    ; VRAM address to write to.
-		dc.b    'FLICKY'		 ; Mappings text.
+		dc.b    "FLICKY"		 ; Mappings text.
 		dc.w    0		    ; Padding.
 
 loc_120C8:
 		dc.w    $C328		    ; VRAM address to write to.
-		dc.b    'PIOPIO'		 ; Mappings text.
+		dc.b    "PIOPIO"		 ; Mappings text.
 		dc.w    0		    ; Padding.
 
 loc_120D2:
 		dc.w    $C3D0		    ; VRAM address to write to.
-		dc.b    'NYANNYAN'               ; Mappings text.
+		dc.b    "NYANNYAN"               ; Mappings text.
 		dc.w    0		    ; Padding.
 
 loc_120DE:
 		dc.w    $C3E8		    ; VRAM address to write to.
-		dc.b    'CHORO'		  ; Mappings text.
+		dc.b    "CHORO"		  ; Mappings text.
 		dc.b    $00		      ; Padding.
 
 loc_120e6:
 		dc.w    $C654		    ; VRAM address to write to.
 		dc.w    $2720		    ; (C) symbol's VRAM location ($27) and space ($20).
-		dc.b    'SEGA 1991'              ; Mappings text.
+		dc.b    "SEGA 1991"              ; Mappings text.
 		dc.b    $00		      ; Padding.
 
 loc_120F4:
 		dc.w    $C328		    ; VRAM address to write to.
-		dc.b    'CHIRP'		  ; Mappings text.
+		dc.b    "CHIRP"		  ; Mappings text.
 		dc.b    $00		      ; Padding.
 
 loc_120fc:
 		dc.w    $C3D0		    ; VRAM address to write to.
-		dc.b    'TIGER'		  ; Mappings text.
+		dc.b    "TIGER"		  ; Mappings text.
 		dc.b    $00		      ; Padding.
 
 loc_12104:
 		dc.w    $C3E8		    ; VRAM address to write to.
-		dc.b    'IGGY'		   ; Mappings text.
+		dc.b    "IGGY"		   ; Mappings text.
 		dc.w    0		    ; Padding.
 
 ; ======================================================================
@@ -4563,7 +4564,7 @@ Pal_TitleScreen:				 ; $1210C
 
 Map_Trademark:				   ; $1211C
 		dc.w    $C0EE		    ; VRAM address.
-		dc.b    'TM'		     ; Mappings text.
+		dc.b    "TM"		     ; Mappings text.
 		dc.w    $00		      ; String terminator.
 
 ; ======================================================================
@@ -4740,7 +4741,7 @@ loc_12290:
 		jsr	($FFFFFB6C).w
 		dbf	d1,loc_12290
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
-		lea	Pal_Main.l,a5              ; Load the main palette address into a5.
+		lea	(Pal_Main).l,a5              ; Load the main palette address into a5.
 		jsr	($FFFFFBBA).w            ; Load the palettes into the palette buffer.
 		clr.l	($FFFFD87E).w            ; Clear the 1st player's score.
 		clr.b	($FFFFD887).w            ; TODO
@@ -4875,33 +4876,33 @@ Map_EngHelpText:				 ; $123F0
 
 loc_12408:
 		dc.w    $C0D2		    ; VRAM address to write to.
-		dc.b    'MAKE YOUR MOVE'         ; Mappings text.
+		dc.b    "MAKE YOUR MOVE"         ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_1241A:
 		dc.w    $C202		    ; VRAM address to write to.
-		dc.b    'HELP'		   ; Mappings text.
+		dc.b    "HELP"		   ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_12422:
 
 		dc.w    $C20E		    ; VRAM address to write to.
-		dc.b    'GUIDE'		  ; Mappings text.
+		dc.b    "GUIDE"		  ; Mappings text.
 		dc.b    $00		      ; String terminator.
 
 loc_1242a:
 		dc.w    $C226		    ; VRAM address to write to.
-		dc.b    'TO THE DOOR!'           ; Mappings text.
+		dc.b    "TO THE DOOR!"           ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_1243A:
 		dc.w    $C2C2		    ; VRAM address to write to.
-		dc.b    'PRESS BUTTON TO JUMP AND SHOOT' ; Mappings text.
+		dc.b    "PRESS BUTTON TO JUMP AND SHOOT" ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_1245C:
 		dc.w    $C592
-		dc.b    'RACK UP A SUPER SCORE!' ; Mappings text.
+		dc.b    "RACK UP A SUPER SCORE!" ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 ; ======================================================================
@@ -5108,7 +5109,7 @@ loc_1256e:
 
 loc_125be:
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
-		lea	Pal_Main.l,a5              ; Load the main palette source into a5.
+		lea	(Pal_Main).l,a5              ; Load the main palette source into a5.
 		jsr	($FFFFFBBA).w            ; Decode the palettes and load them into the palette buffer.
 		lea	Map_LSRound(pc),a6       ; Load the 'ROUND' mappings into a6.
 		bsr.w	WriteASCIIString         ; Dump them onto the screen.
@@ -5121,7 +5122,7 @@ loc_125be:
 
 Map_LSRound:				       ; $125E8
 		dc.w    $C354		      ; VRAM address to write to.
-		dc.b    'ROUND '		   ; ASCII string.
+		dc.b    "ROUND "		   ; ASCII string.
 		dc.w    0		      ; Terminate the string, pad to even.
 
 ; ======================================================================
@@ -5167,7 +5168,7 @@ loc_12642:
 
 loc_12656:
 		bsr.w	loc_100d4		; Clear some variables, load some compressed art, set to load next game mode.
-		lea	Pal_Main.l,a5              ; Load the main palette into a5.
+		lea	(Pal_Main).l,a5              ; Load the main palette into a5.
 		jsr	($FFFFFBBA).w            ; Decode the palette and load it into the palette buffer.
 		clr.l	($FFFFD888).w            ; Clear the in-game timer.
 		clr.b	($FFFFD88D).w            ; Clear the amount of times chicks have been deposited in one level.
@@ -5510,8 +5511,8 @@ loc_12a8c:
 ; ======================================================================
 
 Level_Load:				      ; $12A94
-		jsr	loc_100d4.l            ; Clear some variables, load some compressed art, set to load next game mode.
-		lea	Pal_Main.l,a5              ; Load the main palette address into a5.
+		jsr	(loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
+		lea	(Pal_Main).l,a5              ; Load the main palette address into a5.
 		jsr	($FFFFFBBA).w            ; Load the palettes into the palette buffer.
 		bsr.s	loc_12aba
 		move.w	#$83,d0		  ; Load the level music ID.
@@ -5532,7 +5533,7 @@ loc_12aba:
 		subq.b	#1,d0
 		lsl.w	#1,d0
 		moveq	#-1,d1		   ; Set d1 to $FFFFFFFF.
-		lea	LevelLayouts.l,a0             ; Load RAM address table.
+		lea	(LevelLayouts).l,a0             ; Load RAM address table.
 		move.w	(a0,d0.w),d1             ; Overwrite lower word with the address.
 		movea.l d1,a6		    ; Set as RAM address.
 		move.w	d0,-(sp)		 ; Move d0's value onto the stack.
@@ -6131,10 +6132,10 @@ loc_130f8:
 ; ======================================================================
 
 loc_13110:
-		jsr	loc_100d4.l            ; Clear some variables, load some compressed art, set to load next game mode.
+		jsr	(loc_100d4).l            ; Clear some variables, load some compressed art, set to load next game mode.
 		clr.b	($FFFFD88E).w
 		bsr.w	loc_10126
-		lea	Pal_Main.l,a5
+		lea	(Pal_Main).l,a5
 		jsr	($FFFFFBBA).w
 		move.w	#$800,($FFFFF7E0).w
 		bsr.w	loc_13566
@@ -6142,7 +6143,7 @@ loc_13110:
 		moveq	#2,d2
 		move.w	#loc_135E8_End-loc_135E8,d0 ; Data length.
 		move.w	#$125B,d1		; Relative address in Z80 RAM.
-		lea	loc_135e8.l,a0             ; Data location.
+		lea	(loc_135e8).l,a0             ; Data location.
 		jsr	($FFFFFB54).w
 		move.w	#$2500,sr
 		move.b	#$81,d0		  ; Music?
@@ -6202,12 +6203,12 @@ loc_131DA:
 
 loc_131ec:
 		dc.w    $C290		    ; VRAM address to write to.
-		dc.b    'CONGRATULATIONS!'       ; Mappings text.
+		dc.b    "CONGRATULATIONS!"       ; Mappings text.
 		dc.w    0		    ; String terminator, pad to even.
 
 loc_13200:
 		dc.w    $C38A		    ; VRAM address to write to.
-		dc.b    'YOU ARE A SUPER PLAYER.'; Mappings text.
+		dc.b    "YOU ARE A SUPER PLAYER."; Mappings text.
 		dc.b    0		      ; String terminator.
 
 ; ----------------------------------------------------------------------
@@ -6311,68 +6312,68 @@ loc_1339C:
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_1339e:
-		dc.b    '     STAFF'             ; ASCII string.
+		dc.b    "     STAFF"             ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_133AA:
-		dc.b    '    DIRECTOR'           ; ASCII string.
+		dc.b    "    DIRECTOR"           ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_133B8:
-		dc.b    '     K.FUZZY'           ; ASCII string.
+		dc.b    "     K.FUZZY"           ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_133C6:
-		dc.b    '    DESIGNER'           ; ASCII string.
+		dc.b    "    DESIGNER"           ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_133D4:
-		dc.b    '     YUMI'              ; ASCII string.
+		dc.b    "     YUMI"              ; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 loc_133de:
-		dc.b    '    PROGRAMMER'         ; ASCII string.
+		dc.b    "    PROGRAMMER"         ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_133EE:
-		dc.b    '     O.SAMU'            ; ASCII string.
+		dc.b    "     O.SAMU"            ; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 loc_133fa:
-		dc.b    '    SOUND DESIGN'       ; ASCII string.
+		dc.b    "    SOUND DESIGN"       ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_1340C:
-		dc.b    '     T@S MUSIC'         ; ASCII string.
+		dc.b    "     T@S MUSIC"         ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_1341C:
-		dc.b    '      AND'              ; ASCII string.
+		dc.b    "      AND"              ; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 loc_13426:
-		dc.b    '    SPECIAL THANKS'     ; ASCII string.
+		dc.b    "    SPECIAL THANKS"     ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_1343A:
-		dc.b    '     ARCADE FLICKY STAFF' ; ASCII string.
+		dc.b    "     ARCADE FLICKY STAFF" ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_13454:
-		dc.b    '     TEST PLAYERS'      ; ASCII string.
+		dc.b    "     TEST PLAYERS"      ; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 
 loc_13466:
-		dc.b    '     LEE'               ; ASCII string.
+		dc.b    "     LEE"               ; ASCII string.
 		dc.w    0		    ; Terminate the string, pad to even.
 
 loc_13470:
-		dc.b    '     BO'		; ASCII string.
+		dc.b    "     BO"		; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 loc_13478:
-		dc.b    'CHALLENGE THE NEXT STAGE.' ; ASCII string.
+		dc.b    "CHALLENGE THE NEXT STAGE." ; ASCII string.
 		dc.b    $00		      ; Terminate the string.
 
 ; ======================================================================
